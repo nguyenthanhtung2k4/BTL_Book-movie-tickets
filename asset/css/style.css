@@ -1,0 +1,80 @@
+ /* Áp dụng font và màu nền */
+        body {
+            background-color: #0a0a0a; /* dark-bg */
+            color: #e5e7eb; /* text-gray-200 */
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+
+        /* Thẻ phim có hiệu ứng 3D hover */
+        .movie-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            transform-style: preserve-3d;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3);
+        }
+
+        /* Nút neon */
+        .btn-neon {
+            background-color: var(--color-primary-hex);
+            color: #0a0a0a;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            animation: neon-glow 1.5s ease-in-out infinite alternate;
+        }
+        .btn-neon:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        /* Thẻ poster */
+        .poster-image {
+            height: 300px; /* Chiều cao cố định cho poster */
+            object-fit: cover;
+        }
+
+        /* Custom style cho Modal Trailer */
+        .trailer-container {
+            position: relative;
+            width: 100%;
+            /* Tỷ lệ 16:9 */
+            padding-bottom: 56.25%; 
+        }
+
+        .trailer-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Khung trượt chính (carousel) */
+        .carousel-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .carousel-item.active {
+            opacity: 1;
+            position: relative;
+        }
+        .carousel-inner {
+             /* Dùng transition để tạo hiệu ứng mờ dần đẹp hơn khi chuyển slide */
+            transition: opacity 0.5s ease-in-out;
+        }
+
+
+        @media (min-width: 640px) {
+            .poster-image {
+                height: 400px;
+            }
+        }

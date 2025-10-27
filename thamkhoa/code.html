@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt Vé Xem Phim - CinemaVN</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Cấu hình Tailwind cho chế độ Dark Mode và thêm các animation
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#dc2626', // Màu đỏ chủ đạo
+                        secondary: '#2563eb', // Màu xanh phụ
+                        'dark-bg': '#141414',
+                        'card-bg': '#1f2937',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-in-up': 'slideInUp 0.5s ease-out',
+                        'glow': 'glow 3s ease-in-out infinite alternate',
+                        'bounce-in': 'bounceIn 0.6s ease-out',
+                        'stagger': 'stagger 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideInUp: { '0%': { transform: 'translateY(50px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        glow: { '0%': { boxShadow: '0 0 10px rgba(220, 38, 38, 0.7)' }, '100%': { boxShadow: '0 0 25px rgba(220, 38, 38, 1), 0 0 50px rgba(37, 99, 235, 0.8)' } },
+                        bounceIn: { '0%': { transform: 'scale(0.3)' }, '50%': { transform: 'scale(1.05)' }, '70%': { transform: 'scale(0.9)' }, '100%': { transform: 'scale(1)' } },
+                        stagger: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .stagger-animation {
+            /* Dùng biến CSS để tính toán delay */
+            animation-delay: calc(var(--i) * 0.1s);
+        }
+        /* Style cho slider background cover */
+        .slide-bg {
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-white transition-all duration-300 min-h-screen font-sans">
+
+    <!-- HEADER & NAVIGATION -->
+    <header class="bg-gray-900/90 backdrop-blur-md p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 border-b border-primary/50 animate-fade-in">
+        <div class="text-3xl font-extrabold text-primary drop-shadow-md">CinemaVN</div>
+        
+        <!-- Search Bar (Desktop) -->
+        <div class="flex-1 max-w-lg mx-6 hidden md:block">
+            <input id="searchInput" type="text" placeholder="Tìm kiếm phim, rạp chiếu..." 
+                   class="w-full px-4 py-2 rounded-full bg-gray-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary transition shadow-inner">
+        </div>
+        
+        <!-- Menu (Desktop) -->
+        <nav class="hidden md:flex space-x-6 items-center">
+            <a href="#" class="text-gray-300 hover:text-primary transition-all duration-300 font-semibold transform hover:scale-105">Trang Chủ</a>
+            <a href="#" class="text-gray-300 hover:text-primary transition-all duration-300 font-semibold transform hover:scale-105">Phim</a>
+            <a href="#" class="text-gray-300 hover:text-primary transition-all duration-300 font-semibold transform hover:scale-105">Lịch Chiếu</a>
+            <a href="#" class="text-gray-300 hover:text-primary transition-all duration-300 font-semibold transform hover:scale-105">Liên Hệ</a>
+        </nav>
+
+        <!-- Theme Toggle (Duy trì tính năng từ file 2) -->
+        <button id="themeToggle" class="text-white p-2 rounded-full hover:bg-gray-700 transition-all duration-300 transform hover:rotate-90 flex items-center justify-center ml-4">
+            <!-- Icons được thay thế bằng SVG inline để đảm bảo hoạt động trong single file -->
+            <svg id="sunIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            <svg id="moonIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+            </svg>
+        </button>
+        
+        <!-- Mobile Menu Button -->
+        <button class="md:hidden text-white text-2xl ml-4" onclick="toggleMenu()">☰</button>
+    </header>
+
+    <!-- Mobile Menu Container -->
+    <div id="mobileMenu" class="md:hidden absolute top-[70px] left-0 w-full bg-gray-900/95 backdrop-blur-sm hidden flex-col space-y-3 p-4 z-30 shadow-xl animate-slide-in-up">
+        <input id="mobileSearch" type="text" placeholder="Tìm kiếm phim..." 
+               class="w-full px-4 py-2 rounded-lg bg-gray-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary transition">
+        <a href="#" class="text-white hover:text-primary p-2 block rounded-md">Trang Chủ</a>
+        <a href="#" class="text-white hover:text-primary p-2 block rounded-md">Phim</a>
+        <a href="#" class="text-white hover:text-primary p-2 block rounded-md">Lịch Chiếu</a>
+        <a href="#" class="text-white hover:text-primary p-2 block rounded-md">Liên Hệ</a>
+    </div>
+
+    <!-- HERO SLIDER / CAROUSEL -->
+    <section class="relative w-full h-[400px] sm:h-[500px] overflow-hidden shadow-2xl">
+        <div class="slides flex w-[300%] transition-transform duration-700" id="slidesContainer">
+            <!-- Slide 1 -->
+            <div class="slide slide-bg w-full flex items-center justify-center" style="background-image: url('https://placehold.co/1200x500/101010/FFFFFF?text=AVENGERS:+ENDGAME');">
+                <div class="text-center bg-black/60 backdrop-blur-sm p-8 rounded-2xl shadow-2xl animate-bounce-in max-w-md border-t-4 border-primary">
+                    <h2 class="text-4xl sm:text-5xl font-extrabold mb-2 text-white drop-shadow-2xl">Avengers: Endgame</h2>
+                    <p class="text-lg text-gray-300 mb-4">Hành động | Hồi hộp | 181 phút</p>
+                    <button class="btn-booking bg-primary hover:bg-red-700 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl" 
+                            onclick="openBookingModal('Avengers: Endgame')">Đặt Vé Ngay</button>
+                </div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="slide slide-bg w-full flex items-center justify-center" style="background-image: url('https://placehold.co/1200x500/101010/FFFFFF?text=JOKER+2019');">
+                <div class="text-center bg-black/60 backdrop-blur-sm p-8 rounded-2xl shadow-2xl animate-bounce-in max-w-md border-t-4 border-secondary">
+                    <h2 class="text-4xl sm:text-5xl font-extrabold mb-2 text-white drop-shadow-2xl">Joker</h2>
+                    <p class="text-lg text-gray-300 mb-4">Tâm lý | Kịch tính | 122 phút</p>
+                    <button class="btn-booking bg-primary hover:bg-red-700 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl" 
+                            onclick="openBookingModal('Joker')">Đặt Vé Ngay</button>
+                </div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="slide slide-bg w-full flex items-center justify-center" style="background-image: url('https://placehold.co/1200x500/101010/FFFFFF?text=SPIDER-MAN:+NO+WAY+HOME');">
+                <div class="text-center bg-black/60 backdrop-blur-sm p-8 rounded-2xl shadow-2xl animate-bounce-in max-w-md border-t-4 border-yellow-500">
+                    <h2 class="text-4xl sm:text-5xl font-extrabold mb-2 text-white drop-shadow-2xl">Spider-Man: NWH</h2>
+                    <p class="text-lg text-gray-300 mb-4">Siêu anh hùng | Viễn tưởng | 148 phút</p>
+                    <button class="btn-booking bg-primary hover:bg-red-700 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl" 
+                            onclick="openBookingModal('Spider-Man: No Way Home')">Đặt Vé Ngay</button>
+                </div>
+            </div>
+        </div>
+        <!-- Carousel Controls -->
+        <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition" onclick="prevSlide()">❮</button>
+        <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition" onclick="nextSlide()">❯</button>
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3" id="carouselDots">
+            <!-- Dots sẽ được thêm bằng JS -->
+        </div>
+    </section>
+
+    <main class="container mx-auto px-4 py-12">
+        
+        <!-- SCHEDULE HIGHLIGHT -->
+        <section class="mb-16">
+            <h2 class="text-4xl font-extrabold text-center mb-10 text-primary animate-fade-in">Lịch Chiếu Nổi Bật</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-card-bg p-6 rounded-xl shadow-2xl hover:bg-gray-700 transition duration-300 animate-slide-in-up" style="--i: 0;">
+                    <h3 class="text-2xl font-bold mb-2 text-yellow-400">CGV Vincom</h3>
+                    <p class="text-gray-400">Phim: Joker | Suất: 11:00, 15:00</p>
+                    <p class="text-gray-400">Phim: Endgame | Suất: 14:00, 18:00</p>
+                </div>
+                <div class="bg-card-bg p-6 rounded-xl shadow-2xl hover:bg-gray-700 transition duration-300 animate-slide-in-up" style="--i: 1;">
+                    <h3 class="text-2xl font-bold mb-2 text-yellow-400">Lotte Cinema</h3>
+                    <p class="text-gray-400">Phim: Spider-Man | Suất: 12:00, 20:00</p>
+                    <p class="text-gray-400">Phim: Titanic | Suất: 16:00, 21:00</p>
+                </div>
+                <div class="bg-card-bg p-6 rounded-xl shadow-2xl hover:bg-gray-700 transition duration-300 animate-slide-in-up" style="--i: 2;">
+                    <h3 class="text-2xl font-bold mb-2 text-yellow-400">Galaxy Cinema</h3>
+                    <p class="text-gray-400">Phim: Endgame | Suất: 10:00, 22:00</p>
+                    <p class="text-gray-400">Phim: Joker | Suất: 13:00, 19:00</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- MOVIE GRID -->
+        <section>
+            <h2 class="text-4xl font-extrabold text-center mb-10 text-white animate-fade-in">Phim Đang Chiếu</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="moviesGrid">
+                
+                <!-- Movie Card 1 -->
+                <div class="movie-card relative bg-card-bg rounded-xl overflow-hidden shadow-2xl hover:shadow-primary/50 transition-all duration-500 transform hover:-translate-y-1 animate-stagger" data-title="Avengers: Endgame" style="--i: 0;">
+                    <img src="https://placehold.co/400x500/333333/FFFFFF?text=ENDGAME" alt="Avengers" class="w-full h-80 object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-white truncate">Avengers: Endgame</h3>
+                        <div class="flex items-center my-2">
+                            <span class="text-yellow-400">★★★★★</span> <span class="text-gray-400 ml-2 text-sm">(4.8/5)</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-4">Thể loại: Hành động, Viễn tưởng</p>
+                        <div class="flex space-x-3">
+                            <button class="btn-trailer bg-secondary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" 
+                                    onclick="openTrailer('https://www.youtube.com/embed/TcMBFSGVi1c')">Trailer</button>
+                            <button class="btn-booking bg-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" 
+                                    onclick="openBookingModal('Avengers: Endgame')">Đặt Vé</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Movie Card 2 -->
+                <div class="movie-card relative bg-card-bg rounded-xl overflow-hidden shadow-2xl hover:shadow-secondary/50 transition-all duration-500 transform hover:-translate-y-1 animate-stagger" data-title="Joker" style="--i: 1;">
+                    <img src="https://placehold.co/400x500/333333/FFFFFF?text=JOKER" alt="Joker" class="w-full h-80 object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-white truncate">Joker</h3>
+                        <div class="flex items-center my-2">
+                            <span class="text-yellow-400">★★★★★</span> <span class="text-gray-400 ml-2 text-sm">(4.7/5)</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-4">Thể loại: Tâm lý, Hình sự</p>
+                        <div class="flex space-x-3">
+                            <button class="btn-trailer bg-secondary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" 
+                                    onclick="openTrailer('https://www.youtube.com/embed/z3p-8E5zX9k')">Trailer</button>
+                            <button class="btn-booking bg-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" 
+                                    onclick="openBookingModal('Joker')">Đặt Vé</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Movie Card 3 -->
+                <div class="movie-card relative bg-card-bg rounded-xl overflow-hidden shadow-2xl hover:shadow-yellow-500/50 transition-all duration-500 transform hover:-translate-y-1 animate-stagger" data-title="Spider-Man: No Way Home" style="--i: 2;">
+                    <img src="https://placehold.co/400x500/333333/FFFFFF?text=SPIDERMAN" alt="Spider-Man" class="w-full h-80 object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-white truncate">Spider-Man: NWH</h3>
+                        <div class="flex items-center my-2">
+                            <span class="text-yellow-400">★★★★★</span> <span class="text-gray-400 ml-2 text-sm">(4.6/5)</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-4">Thể loại: Siêu anh hùng, Hành động</p>
+                        <div class="flex space-x-3">
+                            <button class="btn-trailer bg-secondary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" 
+                                    onclick="openTrailer('https://www.youtube.com/embed/JfVOs4VSpmA')">Trailer</button>
+                            <button class="btn-booking bg-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" 
+                                    onclick="openBookingModal('Spider-Man: No Way Home')">Đặt Vé</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Movie Card 4 -->
+                <div class="movie-card relative bg-card-bg rounded-xl overflow-hidden shadow-2xl hover:shadow-green-500/50 transition-all duration-500 transform hover:-translate-y-1 animate-stagger" data-title="Titanic" style="--i: 3;">
+                    <img src="https://placehold.co/400x500/333333/FFFFFF?text=TITANIC" alt="Titanic" class="w-full h-80 object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-white truncate">Titanic</h3>
+                        <div class="flex items-center my-2">
+                            <span class="text-yellow-400">★★★★☆</span> <span class="text-gray-400 ml-2 text-sm">(4.4/5)</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-4">Thể loại: Lãng mạn, Thảm họa</p>
+                        <div class="flex space-x-3">
+                            <button class="btn-trailer bg-secondary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" 
+                                    onclick="openTrailer('https://www.youtube.com/embed/kVrqfYjkTdQ')">Trailer</button>
+                            <button class="btn-booking bg-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" 
+                                    onclick="openBookingModal('Titanic')">Đặt Vé</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 border-t border-gray-700 mt-12 py-8 px-6 text-center">
+        <p class="text-gray-400">&copy; 2023 CinemaVN - Nền tảng Đặt Vé Xem Phim Tốt Nhất Việt Nam.</p>
+        <div class="flex justify-center space-x-4 mt-3">
+            <a href="#" class="text-gray-400 hover:text-primary transition">Privacy Policy</a>
+            <a href="#" class="text-gray-400 hover:text-primary transition">Terms of Service</a>
+            <a href="#" class="text-gray-400 hover:text-primary transition">Liên hệ</a>
+        </div>
+    </footer>
+
+
+    <!-- MODAL TRAILER -->
+    <div id="trailerModal" class="fixed inset-0 bg-black/80 flex justify-center items-center z-[1000] hidden animate-fade-in">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-4xl mx-4 transform animate-slide-in-up">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-white">Trailer Phim</h2>
+                <button class="text-gray-400 hover:text-primary text-3xl transition" onclick="closeTrailer()">&times;</button>
+            </div>
+            <!-- iFrame container with 16:9 aspect ratio -->
+            <div class="relative w-full" style="padding-top: 56.25%;">
+                <iframe id="trailerVideo" class="absolute top-0 left-0 w-full h-full rounded-lg" 
+                        src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL BOOKING (Đặt Vé) -->
+    <div id="bookingModal" class="fixed inset-0 bg-black/80 flex justify-center items-center z-[1000] hidden animate-fade-in">
+        <div class="bg-white text-gray-900 p-8 rounded-2xl shadow-2xl w-full max-w-lg mx-4 transform animate-bounce-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-extrabold text-primary" id="modalMovieTitle">Đặt Vé Phim</h2>
+                <button class="text-gray-500 hover:text-red-600 text-3xl transition" onclick="closeBookingModal()">&times;</button>
+            </div>
+            
+            <form id="bookingForm" class="grid grid-cols-1 gap-6">
+                <!-- Movie Name (Fixed for selected movie) -->
+                <div class="form-group">
+                    <label for="movie" class="block text-sm font-medium text-gray-700 mb-1">Tên Phim:</label>
+                    <input type="text" id="movieNameDisplay" class="w-full px-4 py-3 bg-gray-100 rounded-lg border border-gray-300 focus:outline-none cursor-default" readonly value="Avengers: Endgame">
+                </div>
+                
+                <div class="form-group">
+                    <label for="cinema" class="block text-sm font-medium text-gray-700 mb-1">Chọn Rạp:</label>
+                    <select id="cinema" required class="w-full px-4 py-3 bg-white rounded-lg border border-gray-300 focus:ring-primary focus:border-primary transition duration-150">
+                        <option value="">-- Chọn rạp --</option>
+                        <option value="CGV Vincom">CGV Vincom</option>
+                        <option value="Lotte Cinema">Lotte Cinema</option>
+                        <option value="Galaxy Cinema">Galaxy Cinema</option>
+                        <option value="BHD Star">BHD Star</option>
+                    </select>
+                    <div class="text-red-500 text-sm mt-1 hidden" id="cinemaError">Vui lòng chọn rạp.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Chọn Suất Chiếu:</label>
+                    <select id="time" required class="w-full px-4 py-3 bg-white rounded-lg border border-gray-300 focus:ring-primary focus:border-primary transition duration-150">
+                        <option value="">-- Chọn thời gian --</option>
+                        <option value="10:00">10:00 - Sáng</option>
+                        <option value="14:00">14:00 - Chiều</option>
+                        <option value="18:00">18:00 - Tối</option>
+                        <option value="21:30">21:30 - Khuya</option>
+                    </select>
+                    <div class="text-red-500 text-sm mt-1 hidden" id="timeError">Vui lòng chọn suất chiếu.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tickets" class="block text-sm font-medium text-gray-700 mb-1">Số Lượng Vé (1-10):</label>
+                    <input type="number" id="tickets" min="1" max="10" required 
+                           class="w-full px-4 py-3 bg-white rounded-lg border border-gray-300 focus:ring-primary focus:border-primary transition duration-150" value="1">
+                    <div class="text-red-500 text-sm mt-1 hidden" id="ticketsError">Vui lòng nhập số vé hợp lệ (1-10).</div>
+                </div>
+
+                <button type="submit" class="bg-primary hover:bg-red-700 text-white font-bold py-3 rounded-xl transition duration-300 transform hover:scale-[1.01] shadow-lg disabled:bg-gray-400" id="submitBtn">
+                    Xác Nhận Đặt Vé
+                </button>
+            </form>
+            
+            <!-- Confirmation Message -->
+            <div id="confirmation" class="mt-6 p-4 bg-green-100 text-green-700 border-l-4 border-green-500 rounded-lg hidden animate-fade-in">
+                <p class="font-semibold">🎉 Đặt vé thành công!</p>
+                <p id="confirmationMessage" class="text-sm mt-1">Thông tin chi tiết: [Phim] tại [Rạp], suất [Thời gian], [Số lượng] vé.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // === State và Data Mẫu ===
+        let currentSlide = 0;
+        const slides = document.getElementById('slidesContainer');
+        const slideElements = slides.querySelectorAll('.slide');
+        const totalSlides = slideElements.length;
+
+        // === Theme Toggle Logic ===
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const isDarkMode = document.documentElement.classList.toggle('dark');
+            
+            // Cập nhật icon
+            document.getElementById('sunIcon').classList.toggle('hidden', isDarkMode);
+            document.getElementById('moonIcon').classList.toggle('hidden', !isDarkMode);
+        });
+
+        // Khởi tạo icon ban đầu
+        if (document.documentElement.classList.contains('dark')) {
+            document.getElementById('sunIcon').classList.add('hidden');
+            document.getElementById('moonIcon').classList.remove('hidden');
+        } else {
+            document.getElementById('sunIcon').classList.remove('hidden');
+            document.getElementById('moonIcon').classList.add('hidden');
+        }
+
+        // === Mobile Menu Logic ===
+        function toggleMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+
+        // === Carousel Logic ===
+        function updateCarousel() {
+            const offset = currentSlide * 100;
+            slides.style.transform = `translateX(-${offset / totalSlides}%)`; // Điều chỉnh để phù hợp với w-[300%]
+            updateDots();
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateCarousel();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateCarousel();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
+
+        // Thêm dots vào HTML
+        const dotsContainer = document.getElementById('carouselDots');
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('span');
+            dot.classList.add('w-3', 'h-3', 'bg-white', 'rounded-full', 'opacity-50', 'cursor-pointer', 'hover:opacity-100', 'transition');
+            dot.setAttribute('onclick', `goToSlide(${i})`);
+            dotsContainer.appendChild(dot);
+        }
+
+        function updateDots() {
+            const dots = dotsContainer.querySelectorAll('span');
+            dots.forEach((dot, i) => {
+                dot.classList.remove('opacity-100', 'bg-primary');
+                dot.classList.add('opacity-50', 'bg-white');
+                if (i === currentSlide) {
+                    dot.classList.remove('opacity-50', 'bg-white');
+                    dot.classList.add('opacity-100', 'bg-primary');
+                }
+            });
+        }
+        
+        // Khởi động Carousel
+        updateDots();
+        setInterval(nextSlide, 5000); // Tự động chuyển slide mỗi 5 giây
+        
+        // === Modal Trailer Logic ===
+        function openTrailer(url) {
+            document.getElementById('trailerVideo').src = url + '?autoplay=1'; // Tự động chạy
+            document.getElementById('trailerModal').classList.remove('hidden');
+        }
+        function closeTrailer() {
+            document.getElementById('trailerModal').classList.add('hidden');
+            document.getElementById('trailerVideo').src = ''; // Dừng video
+        }
+
+        // === Modal Booking Logic ===
+        function openBookingModal(movieTitle) {
+            document.getElementById('modalMovieTitle').textContent = `Đặt Vé Phim: ${movieTitle}`;
+            document.getElementById('movieNameDisplay').value = movieTitle;
+            document.getElementById('bookingModal').classList.remove('hidden');
+            document.getElementById('confirmation').classList.add('hidden');
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+            // Reset form và ẩn lỗi
+            document.getElementById('bookingForm').reset();
+            document.querySelectorAll('.text-red-500').forEach(el => el.classList.add('hidden'));
+        }
+
+        // Đóng modal khi click bên ngoài
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('trailerModal')) {
+                closeTrailer();
+            }
+            if (event.target === document.getElementById('bookingModal')) {
+                closeBookingModal();
+            }
+        }
+        
+        // === Booking Form Validation & Submit Logic ===
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let isValid = true;
+            
+            // 1. Lấy giá trị
+            const movie = document.getElementById('movieNameDisplay').value;
+            const cinema = document.getElementById('cinema').value;
+            const time = document.getElementById('time').value;
+            const tickets = parseInt(document.getElementById('tickets').value, 10);
+            
+            // 2. Validate
+            document.querySelectorAll('.text-red-500').forEach(el => el.classList.add('hidden')); // Ẩn tất cả lỗi cũ
+
+            if (!cinema) {
+                document.getElementById('cinemaError').classList.remove('hidden');
+                isValid = false;
+            }
+            if (!time) {
+                document.getElementById('timeError').classList.remove('hidden');
+                isValid = false;
+            }
+            if (isNaN(tickets) || tickets < 1 || tickets > 10) {
+                document.getElementById('ticketsError').classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (isValid) {
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.textContent = 'Đang xử lý...';
+                submitBtn.disabled = true;
+                
+                // Giả lập API call (Delay 1.5 giây)
+                setTimeout(() => {
+                    // 3. Xử lý thành công
+                    submitBtn.textContent = 'Đặt Vé Thành Công!';
+                    submitBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                    submitBtn.classList.remove('bg-primary', 'hover:bg-red-700');
+                    
+                    const confirmationEl = document.getElementById('confirmation');
+                    const confirmationMsg = document.getElementById('confirmationMessage');
+                    
+                    confirmationMsg.innerHTML = `Phim: <b>${movie}</b>, tại <b>${cinema}</b>, suất <b>${time}</b>, <b>${tickets}</b> vé. Vui lòng kiểm tra email!`;
+                    
+                    confirmationEl.classList.remove('hidden');
+                    
+                    // Tự động đóng modal sau 5 giây
+                    setTimeout(() => {
+                        closeBookingModal();
+                        submitBtn.textContent = 'Xác Nhận Đặt Vé';
+                        submitBtn.classList.add('bg-primary', 'hover:bg-red-700');
+                        submitBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    }, 5000);
+
+                }, 1500);
+            }
+        });
+
+    </script>
+</body>
+</html>
