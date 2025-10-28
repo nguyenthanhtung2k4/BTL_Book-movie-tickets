@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Ký | SCARLET CINEMA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+  <script>
+    const THEMES = {
+      SCARLET: { rgb: '220, 38, 38', hex: '#dc2626', shadow: 'rgba(220, 38, 38, 0.6)' }
+    };
+    const currentTheme = THEMES.SCARLET;
+
+    function applyTheme(theme) {
+      document.documentElement.style.setProperty('--primary-rgb', theme.rgb);
+      document.documentElement.style.setProperty('--color-primary-hex', theme.hex);
+      document.documentElement.style.setProperty('--color-primary-hex-shadow', theme.shadow);
+    }
+
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--color-primary-hex)',
+            'dark-bg': '#0a0a0a',
+            'card-bg': '#1f2937'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          },
+          animation: {
+            'neon-glow': 'neonGlow 2s ease-in-out infinite alternate'
+          },
+          keyframes: {
+            neonGlow: {
+              '0%': { boxShadow: '0 0 5px var(--color-primary-hex-shadow), 0 0 10px var(--color-primary-hex-shadow)' },
+              '100%': { boxShadow: '0 0 10px var(--color-primary-hex), 0 0 20px var(--color-primary-hex-shadow)' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #e5e7eb;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-neon {
+      background-color: var(--color-primary-hex);
+      color: #0a0a0a;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.3s ease;
+      animation: neon-glow 1.5s ease-in-out infinite alternate;
+    }
+    .btn-neon:hover {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+<body class="dark bg-dark-bg min-h-screen flex items-center justify-center" onload="applyTheme(currentTheme); lucide.createIcons();">
+  <div class="bg-card-bg p-8 rounded-2xl shadow-2xl w-full max-w-md animate-fade-in">
+    <!-- Logo -->
+    <div class="flex items-center justify-center space-x-2 mb-6">
+      <i data-lucide="popcorn" class="text-primary h-8 w-8"></i>
+      <h1 class="text-2xl font-bold text-white tracking-wide">SCARLET CINEMA</h1>
+    </div>
+
+    <!-- Tiêu đề -->
+    <h2 class="text-center text-3xl font-extrabold text-white mb-2">Tạo Tài Khoản</h2>
+    <p class="text-center text-gray-400 mb-6">Gia nhập Scarlet để nhận ưu đãi độc quyền!</p>
+
+    <!-- Form đăng ký -->
+    <form id="registerForm" class="space-y-5">
+      <div>
+        <label for="fullname" class="block text-sm font-medium text-gray-300 mb-1">Họ và Tên</label>
+        <input id="fullname" name="fullname" type="text" required placeholder="Nguyễn Văn A"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+      </div>
+
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+        <input id="email" name="email" type="email" required placeholder="nhapemail@domain.com"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
+        <input id="password" name="password" type="password" required placeholder="••••••••"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+      </div>
+
+      <div>
+        <label for="confirmPassword" class="block text-sm font-medium text-gray-300 mb-1">Xác nhận mật khẩu</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" required placeholder="Nhập lại mật khẩu"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+      </div>
+
+      <button type="submit" class="btn-neon w-full mt-4">Tạo Tài Khoản</button>
+
+      <!-- Thông báo -->
+      <p id="registerMessage" class="text-center text-sm mt-3 hidden"></p>
+
+      <div class="text-sm text-center mt-4">
+        Đã có tài khoản?
+        <a href="login.html" class="text-primary hover:underline">Đăng nhập ngay</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const message = document.getElementById('registerMessage');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      message.classList.remove('hidden', 'text-green-400', 'text-red-400');
+      message.classList.add('text-gray-300');
+      message.textContent = 'Đang xử lý...';
+
+      setTimeout(() => {
+        const fullname = form.fullname.value.trim();
+        const email = form.email.value.trim();
+        const pass = form.password.value.trim();
+        const confirm = form.confirmPassword.value.trim();
+
+        if (!fullname || !email || !pass || !confirm) {
+          message.classList.replace('text-gray-300', 'text-red-400');
+          message.textContent = '❌ Vui lòng điền đầy đủ thông tin.';
+          return;
+        }
+
+        if (pass !== confirm) {
+          message.classList.replace('text-gray-300', 'text-red-400');
+          message.textContent = '❌ Mật khẩu xác nhận không trùng khớp.';
+          return;
+        }
+
+        // Giả lập thành công
+        message.classList.replace('text-gray-300', 'text-green-400');
+        message.textContent = '✅ Đăng ký thành công! Đang chuyển hướng...';
+        setTimeout(() => window.location.href = 'login.html', 1500);
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

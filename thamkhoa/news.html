@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tin Tức Điện Ảnh | SCARLET CINEMA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+  <script>
+    const THEMES = {
+      SCARLET: { rgb: '220, 38, 38', hex: '#dc2626', shadow: 'rgba(220, 38, 38, 0.6)' }
+    };
+    const currentTheme = THEMES.SCARLET;
+
+    function applyTheme(theme) {
+      document.documentElement.style.setProperty('--primary-rgb', theme.rgb);
+      document.documentElement.style.setProperty('--color-primary-hex', theme.hex);
+      document.documentElement.style.setProperty('--color-primary-hex-shadow', theme.shadow);
+    }
+
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--color-primary-hex)',
+            'dark-bg': '#0a0a0a',
+            'card-bg': '#1f2937'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #e5e7eb;
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+
+<body class="dark bg-dark-bg min-h-screen" onload="applyTheme(currentTheme); lucide.createIcons();">
+
+  <!-- HEADER -->
+  <header class="flex items-center justify-between px-8 py-4 bg-card-bg shadow-lg">
+    <div class="flex items-center space-x-2">
+      <i data-lucide="popcorn" class="text-primary h-6 w-6"></i>
+      <h1 class="text-xl font-bold text-white tracking-wide">SCARLET CINEMA</h1>
+    </div>
+    <nav class="space-x-6 text-sm">
+      <a href="index.html" class="text-gray-300 hover:text-primary">Trang chủ</a>
+      <a href="news.html" class="text-primary font-semibold">Tin tức</a>
+      <a href="login.html" class="text-gray-300 hover:text-primary">Đăng nhập</a>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="px-6 sm:px-12 py-10">
+    <h2 class="text-4xl font-bold text-white mb-10 border-b-4 border-primary/50 inline-block pb-2">
+      <i data-lucide="newspaper" class="inline text-primary mr-2"></i>
+      Tin Tức Điện Ảnh Mới Nhất
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Tin 1 -->
+      <div class="bg-card-bg rounded-xl overflow-hidden shadow-lg hover:shadow-primary/30 transition-all duration-300">
+        <img src="https://placehold.co/600x400/1f2937/FFFFFF?text=Bom+Tấn+2025" class="w-full h-48 object-cover" alt="">
+        <div class="p-5">
+          <h3 class="text-xl font-semibold text-white mb-2">“Người Kế Thừa Vũ Trụ” Công Chiếu Toàn Quốc</h3>
+          <p class="text-gray-400 text-sm mb-3">Phim hành động bom tấn 2025 gây sốt phòng vé ngay ngày đầu tiên ra mắt.</p>
+          <a href="#" class="text-primary font-medium hover:underline">Đọc thêm →</a>
+        </div>
+      </div>
+
+      <!-- Tin 2 -->
+      <div class="bg-card-bg rounded-xl overflow-hidden shadow-lg hover:shadow-primary/30 transition-all duration-300">
+        <img src="https://placehold.co/600x400/1f2937/FFFFFF?text=Sự+Kiện+Scarlet" class="w-full h-48 object-cover" alt="">
+        <div class="p-5">
+          <h3 class="text-xl font-semibold text-white mb-2">Sự Kiện Scarlet Cinema 5 Năm Kỷ Niệm</h3>
+          <p class="text-gray-400 text-sm mb-3">Đêm xem phim miễn phí và tặng quà độc quyền cho khách hàng thân thiết.</p>
+          <a href="#" class="text-primary font-medium hover:underline">Đọc thêm →</a>
+        </div>
+      </div>
+
+      <!-- Tin 3 -->
+      <div class="bg-card-bg rounded-xl overflow-hidden shadow-lg hover:shadow-primary/30 transition-all duration-300">
+        <img src="https://placehold.co/600x400/1f2937/FFFFFF?text=Hậu+Trường" class="w-full h-48 object-cover" alt="">
+        <div class="p-5">
+          <h3 class="text-xl font-semibold text-white mb-2">Hậu Trường “Thiên Thần Mất Cánh” Gây Chú Ý</h3>
+          <p class="text-gray-400 text-sm mb-3">Những hình ảnh độc quyền về dàn diễn viên và quá trình sản xuất hoành tráng.</p>
+          <a href="#" class="text-primary font-medium hover:underline">Đọc thêm →</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center text-gray-400 py-6 mt-12 border-t border-gray-700">
+    <p>© 2025 SCARLET CINEMA. Mọi quyền được bảo lưu.</p>
+  </footer>
+
+</body>
+</html>

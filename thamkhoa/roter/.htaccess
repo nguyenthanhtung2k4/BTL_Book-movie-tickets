@@ -1,0 +1,12 @@
+# BTL_Book_movie_tickets/.htaccess
+
+RewriteEngine On
+# Thiết lập Base URL để tránh lỗi chuyển hướng sai
+RewriteBase /BTL_Book_movie_tickets/
+
+# 1. BỎ QUA các yêu cầu đến các file/thư mục TỒN TẠI
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# 2. CHUYỂN HƯỚNG MỌI yêu cầu còn lại đến index.php
+RewriteRule ^(.*)$ index.php [L,QSA]
