@@ -5,6 +5,8 @@ require_once __DIR__ . '/../../handle/user_handle.php';
 $message = '';
 $isSuccess = false;
 
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
         'full_name'     => trim($_POST['full_name']),
@@ -48,7 +50,7 @@ require_once __DIR__ . "/side_bar.php";
     <form method="POST" class="space-y-5">
       <!-- Họ tên -->
       <div>
-        <label class="block mb-2 text-gray-300 font-medium">👤 Họ và tên</label>
+        <label class="block mb-2 text-gray-300 font-medium">Họ và tên</label>
         <input type="text" name="full_name" required
                value="<?= htmlspecialchars($_POST['full_name'] ?? '') ?>"
                placeholder="Nhập họ tên đầy đủ..."
@@ -58,7 +60,7 @@ require_once __DIR__ . "/side_bar.php";
 
       <!-- Email -->
       <div>
-        <label class="block mb-2 text-gray-300 font-medium">📧 Email</label>
+        <label class="block mb-2 text-gray-300 font-medium">Email</label>
         <input type="email" name="email" required
                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
                placeholder="ví dụ: example@gmail.com"
@@ -68,7 +70,7 @@ require_once __DIR__ . "/side_bar.php";
 
       <!-- Mật khẩu -->
       <div>
-        <label class="block mb-2 text-gray-300 font-medium">🔒 Mật khẩu</label>
+        <label class="block mb-2 text-gray-300 font-medium"> Mật khẩu</label>
         <input type="password" name="password" required
                placeholder="••••••••"
                class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white
@@ -77,7 +79,7 @@ require_once __DIR__ . "/side_bar.php";
 
       <!-- Vai trò -->
       <div>
-        <label class="block mb-2 text-gray-300 font-medium">⚙️ Vai trò</label>
+        <label class="block mb-2 text-gray-300 font-medium">Vai trò</label>
         <select name="role"
                 class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white
                        focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition">
@@ -91,7 +93,7 @@ require_once __DIR__ . "/side_bar.php";
         <button type="submit"
                 class="bg-red-500 hover:bg-red-600 text-white font-semibold px-8 py-2.5 rounded-lg
                        shadow-md hover:shadow-lg transition-all duration-200">
-          💾 Lưu người dùng
+          Thêm người dùng
         </button>
 
         <a href="users.php"

@@ -37,7 +37,7 @@ $adminName = "Admin Scarlet";
         <a href="<?= $baseUrl?>/users.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="users" class="inline w-4 h-4 mr-2"></i>Quản lý người dùng
         </a>
-        <a href="<?= $baseUrl?>/movie.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
+        <a href="<?= $baseUrl?>/movies.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="film" class="inline w-4 h-4 mr-2"></i>Quản lý phim
         </a>
       </nav>

@@ -23,10 +23,16 @@ CREATE TABLE IF NOT EXISTS movies (
   description TEXT,
   rating VARCHAR(16),
   release_date DATE,
+  
+  banner_url VARCHAR(512) DEFAULT NULL,           -- Link ảnh banner (poster chính)
+  trailer_url VARCHAR(512) DEFAULT NULL, 
+
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_title (title(100))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 
 -- 3) theaters (rạp)
 CREATE TABLE IF NOT EXISTS theaters (

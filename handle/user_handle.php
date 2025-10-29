@@ -65,26 +65,28 @@ function handle($action, $data = [], $id = null) {
 
 
             case 'delete':
-                if (!$id) {
-                    $response['message'] = '⚠️ Thiếu ID người dùng để xoá.';
+                 if (!$id) {
+                    $response['message'] = 'Thiếu ID người dùng để xóa.';
                     return $response;
                 }
-
-                if ($repo->delete($id)) {
-                    $response['success'] = true;
-                    $response['message'] = '🗑️ Xoá người dùng thành công!';
-                } else {
-                    $response['message'] = '❌ Xoá người dùng thất bại.';
+                
+                if (session_status() === PHP_SESSION_NONE) session_start();
+                if (isset($_SESSION['user']) && intval($_SESSION['user']['id']) === intval($id)) {
+                    $response['message'] = 'Bạn không thể xóa chính mình.';
+                    return $response;
                 }
+                $ok = $repo->delete($id);
+                $response['success'] = (bool)$ok;
+                $response['message'] = $ok ? 'Xóa người dùng thành công.' : 'Xóa thất bại.';
                 return $response;
 
             default:
-                $response['message'] = '❌ Hành động không hợp lệ.';
+                $response['message'] = 'Hành động không hợp lệ.';
                 return $response;
         }
 
     } catch (Exception $e) {
-        $response['message'] = '💥 Lỗi hệ thống: ' . $e->getMessage();
+        $response['message'] = 'Lỗi hệ thống: ' . $e->getMessage();
         return $response;
     }
 }

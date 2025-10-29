@@ -18,6 +18,12 @@ class Repository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // 🔹 Lấy tất cả dữ liệu
+    public function getAllTimeDESC() {
+        $stmt = $this->pdo->query("SELECT * FROM {$this->table} Order BY created_at DESC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // 🔹 Tìm theo ID
     public function find($id) {
         $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE id = :id");

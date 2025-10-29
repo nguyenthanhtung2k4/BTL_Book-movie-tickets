@@ -4,19 +4,19 @@ $title = "User";
 $pageName = "Bảng điều khiển người dùng";
 
 require_once __DIR__ . "/../../function/reponsitory.php";
+require_once __DIR__ . "/side_bar.php";
 
 $userRepo = new Repository('users');
-$users = $userRepo->getAll();
+$users = $userRepo->getAllTimeDESC();
 
-require_once __DIR__ . "/side_bar.php";
 ?>
 
 <main class="flex-1 p-10 text-white">
   <h2 class="text-3xl font-bold text-red-500 mb-6"><?= $pageName ?></h2>
 
   <div class="mb-6">
-    <a href="addUser.php" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-semibold">
-      ➕ Thêm người dùng mới
+    <a href="addUser.php" class="bg-red-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-semibold">
+       Thêm người dùng mới
     </a>
   </div>
 
@@ -49,9 +49,8 @@ require_once __DIR__ . "/side_bar.php";
               </td>
               <td class="p-3">
                 <a href="editUser.php?id=<?= $user['id'] ?>" class="text-green-400 hover:underline mr-2">Sửa</a>
-                <a href="user_handle.php?action=delete&id=<?= $user['id'] ?>"
-                   class="text-red-500 hover:underline"
-                   onclick="return confirm('Bạn có chắc muốn xóa người dùng này?')">
+                <a href="deleteUser.php?action=delete&id=<?= $user['id'] ?>"
+                   class="text-red-500 hover:underline">
                   Xóa
                 </a>
               </td>
