@@ -3,7 +3,7 @@ $adminName = "Admin Scarlet";
 $title = "Dashboard";
 $pageName = "Bảng điều khiển quản trị";
 require_once __DIR__ ."/side_bar.php";
-
+require_once __DIR__ ."/../../function/reponsitory.php";
 ?>
 
     <main class="flex-1 p-10">

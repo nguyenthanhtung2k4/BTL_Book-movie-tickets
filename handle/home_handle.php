@@ -1,3 +1,4 @@
+
 <?php
 require_once __DIR__ . '/../function/reponsitory.php';
 
@@ -40,5 +41,3 @@ function handleMovie($action, $data = [], $id = null) {
             return $response;
     }
 }
-
-

@@ -1,0 +1,15 @@
+ <div class="movie-card bg-card-bg rounded-xl overflow-hidden animate-fade-in" data-movie-title="${movie.title}">
+                        <img class="w-full poster-image" src="${movie.placeholder}" alt="${movie.title}" onerror="this.src='https://placehold.co/400x600/1f2937/FFFFFF?text=POSTER+LỖI'">
+                        <div class="p-4">
+                            <h3 class="text-xl font-semibold text-white truncate">${movie.title}</h3>
+                            <p class="text-primary text-sm font-medium mb-3">${movie.genre}</p>
+                            <div class="flex space-x-2">
+                                <button onclick="openBookingModal('${movie.title}')" class="w-1/2 btn-neon py-2 text-sm">
+                                    ĐẶT VÉ
+                                </button>
+                                <button onclick="openTrailerModal('${movie.title}')" class="w-1/2 bg-gray-600/50 text-white py-2 text-sm rounded-lg hover:bg-gray-500/70 transition-all flex items-center justify-center space-x-1">
+                                    <i data-lucide="play" class="w-4 h-4"></i> <span>TRAILER</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
