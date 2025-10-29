@@ -9,12 +9,11 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . "/../../function/reponsitory.php";
-require_once __DIR__ . "/side_bar.php"; // Giả định file này chứa cấu trúc bao ngoài
+require_once __DIR__ . "/side_bar.php";
 
 $repo = new Repository('movies');
-// Cải tiến: Thử sắp xếp phim theo ngày tạo hoặc ngày ra mắt mới nhất
-// $movies = $repo->getAll(); 
-$movies = $repo->getAll(); // Giả định Repository hỗ trợ tham số ORDER BY
+
+$movies = $repo->getAll();
 
 $flash_message = $_SESSION['flash_message'] ?? '';
 $flash_success = $_SESSION['flash_success'] ?? false;
@@ -39,9 +38,10 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
       </div>
 
       <?php if ($flash_message): ?>
-            <div
-                  class="mb-8 p-4 rounded-xl shadow-xl border <?= $flash_success ? 'bg-green-800/50 border-green-500 text-green-200' : 'bg-red-800/50 border-red-500 text-red-200' ?>">
-                  <p class="font-medium"><?= htmlspecialchars($flash_message) ?></p>
+            <div id='flash-message'  class="fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold transition-transform duration-300
+              <?= $flash_success ? 'bg-green-500' : 'bg-red-600' ?>">
+                  <?= htmlspecialchars($flash_message) ?>
+                  
             </div>
       <?php endif; ?>
 
@@ -69,11 +69,11 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
 
                                     <div class="text-xs text-gray-400 space-y-1">
                                           <p>
-                                                <span class="font-medium text-gray-300">📅 Ra mắt:</span>
+                                                <span class="font-medium text-gray-300">Ra mắt:</span>
                                                 <?= htmlspecialchars($movie['release_date'] ?? 'N/A') ?>
                                           </p>
                                           <p>
-                                                <span class="font-medium text-gray-300">⏱️ Thời lượng:</span>
+                                                <span class="font-medium text-gray-300">⏱Thời lượng:</span>
                                                 <?= htmlspecialchars($movie['duration_min'] ?? '-') ?> phút
                                           </p>
                                     </div>
@@ -81,22 +81,16 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
                                     <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-700/50">
                                           <a href="editMovie.php?id=<?= $movie['id'] ?>"
                                                 class="text-blue-400 hover:text-blue-500 font-medium text-sm transition flex items-center gap-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                       viewBox="0 0 24 24" stroke="currentColor">
                                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-7-7l4 4m-4-4l-4 4" />
-                                                </svg>
-                                                Sửa
+                                                </svg> -->
+                                                ✏️
                                           </a>
-                                          <a href="deleteMovie.php?id=<?= $movie['id'] ?>"
-                                                class="text-red-400 hover:text-red-500 font-medium text-sm transition flex items-center gap-1"
-                                                onclick="return confirm('Bạn có chắc chắn muốn xóa phim này?')">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                      viewBox="0 0 24 24" stroke="currentColor">
-                                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                                Xóa
+                                          <a href="deleteMovie.php?action=delete&id=<?= $movie['id'] ?>"
+                                                class="text-red-400 hover:text-red-500 font-medium text-sm transition flex items-center gap-1">
+                                                🗑️
                                           </a>
                                     </div>
                               </div>
@@ -112,6 +106,14 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
             </div>
       <?php endif; ?>
 </main>
-</body>
-
-</html>
+ <script>
+    // làm mờ dần và ẩn thông báo
+    setTimeout(() => {
+      const flash = document.getElementById('flash-message');
+      if (flash) {
+        flash.style.opacity = '0';
+        flash.style.transform = 'translateY(-10px)';
+        setTimeout(() => flash.remove(), 500); 
+      }
+    }, 1500);
+  </script>

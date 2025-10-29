@@ -1,4 +1,9 @@
 <?php
+
+$title = "Sửa người dùng";
+$pageName = "Chỉnh sửa người dùng";
+require_once __DIR__ . "/side_bar.php";
+
 require_once __DIR__ . '/../../function/reponsitory.php';
 require_once __DIR__ . '/../../handle/user_handle.php';
 
@@ -13,69 +18,13 @@ if ($id <= 0) {
     header('Location: users.php');
     exit;
 }
-
 $user = $repo->find($id);
 if (!$user) {
     header('Location: users.php');
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = [
-        'full_name' => trim($_POST['full_name']),
-        'email'     => trim($_POST['email']),
-        'role'      => $_POST['role'] ?? 'customer',
-        'updated_at'=> date('Y-m-d H:i:s')
-    ];
 
-    if (!empty($_POST['password'])) {
-        $data['password_hash'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    }
-
-    if ($data['email'] !== $user['email']) {
-        $existing = $repo->findBy('email', $data['email']);
-        if ($existing && (int)$existing['id'] !== $id) {
-            $message = '⚠️ Email đã được sử dụng bởi tài khoản khác.';
-        } else {
-            $result = handle('edit', $data, $id);
-            if (is_array($result)) {
-                $isSuccess = $result['success'];
-                $message = $result['message'];
-            } else {
-                if ($result) {
-                    $isSuccess = true;
-                    $message = 'Cập nhật thành công!';
-                } else {
-                    $isSuccess = false;
-                    $message = 'Cập nhật thất bại!';
-                }
-            }
-        }
-    } else {
-        $result = handle('edit', $data, $id);
-        if (is_array($result)) {
-            $isSuccess = $result['success'];
-            $message = $result['message'];
-        } else {
-            if ($result) {
-                $isSuccess = true;
-                $message = '✅ Cập nhật thành công!';
-            } else {
-                $isSuccess = false;
-                $message = '❌ Cập nhật thất bại!';
-            }
-        }
-    }
-
-    if ($isSuccess) {
-        header("Refresh: 1.2; url=users.php");
-        $user = $repo->find($id);
-    }
-}
-
-$title = "Sửa người dùng";
-$pageName = "Chỉnh sửa người dùng";
-require_once __DIR__ . "/side_bar.php";
 ?>
 
 <main class="flex-1 p-10 text-gray-100 min-h-screen bg-gray-900 relative">

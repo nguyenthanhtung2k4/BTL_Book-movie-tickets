@@ -40,6 +40,12 @@ $adminName = "Admin Scarlet";
         <a href="<?= $baseUrl?>/movies.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="film" class="inline w-4 h-4 mr-2"></i>Quản lý phim
         </a>
+        <a href="<?= $baseUrl?>/theaters.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
+          <i data-lucide="theaters" class="inline w-4 h-4 mr-2"></i>Quản lý rạp
+        </a>
+        <a href="<?= $baseUrl?>/booking.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
+          <i data-lucide="ticket" class="inline w-4 h-4 mr-2"></i>Quản lý vé
+        </a>
       </nav>
 
       <div class="border-t border-gray-700 pt-4 mt-4 text-sm">

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../function/reponsitory.php';
 
-function handle($action, $data = [], $id = null) {
+function handleUser($action, $data = [], $id = null) {
     $repo = new Repository('users');
     $response = [
         'success' => false,
@@ -90,3 +90,61 @@ function handle($action, $data = [], $id = null) {
         return $response;
     }
 }
+
+
+if ($action='edit' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+    
+
+    $data = [
+        'full_name' => trim($_POST['full_name']),
+        'email'     => trim($_POST['email']),
+        'role'      => $_POST['role'] ?? 'customer',
+        'updated_at'=> date('Y-m-d H:i:s')
+    ];
+
+    if (!empty($_POST['password'])) {
+        $data['password_hash'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    }
+
+    if ($data['email'] !== $user['email']) {
+        $existing = $repo->findBy('email', $data['email']);
+        if ($existing && (int)$existing['id'] !== $id) {
+            $message = '⚠️ Email đã được sử dụng bởi tài khoản khác.';
+        } else {
+            $result = handleUser('edit', $data, $id);
+            if (is_array($result)) {
+                $isSuccess = $result['success'];
+                $message = $result['message'];
+            } else {
+                if ($result) {
+                    $isSuccess = true;
+                    $message = 'Cập nhật thành công!';
+                } else {
+                    $isSuccess = false;
+                    $message = 'Cập nhật thất bại!';
+                }
+            }
+        }
+    } else {
+        $result = handleUser('edit', $data, $id);
+        if (is_array($result)) {
+            $isSuccess = $result['success'];
+            $message = $result['message'];
+        } else {
+            if ($result) {
+                $isSuccess = true;
+                $message = '✅ Cập nhật thành công!';
+            } else {
+                $isSuccess = false;
+                $message = '❌ Cập nhật thất bại!';
+            }
+        }
+    }
+
+    if ($isSuccess) {
+        header("Refresh: 1.2; url=users.php");
+        $user = $repo->find($id);
+    }
+
+}
+
