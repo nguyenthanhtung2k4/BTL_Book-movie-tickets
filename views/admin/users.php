@@ -15,7 +15,7 @@ $users = $userRepo->getAllTimeDESC();
   <h2 class="text-3xl font-bold text-red-500 mb-6"><?= $pageName ?></h2>
 
   <div class="mb-6">
-    <a href="addUser.php" class="bg-red-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-semibold">
+    <a href="addUser.php" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-semibold">
        Thêm người dùng mới
     </a>
   </div>
@@ -48,10 +48,10 @@ $users = $userRepo->getAllTimeDESC();
                 <?= isset($user['created_at']) ? date('d/m/Y', strtotime($user['created_at'])) : '-' ?>
               </td>
               <td class="p-3">
-                <a href="editUser.php?id=<?= $user['id'] ?>" class="text-green-400 hover:underline mr-2">Sửa</a>
+                <a href="editUser.php?action=edit&id=<?= $user['id'] ?>" class="text-green-400 hover:underline mr-2">✏️</a>
                 <a href="deleteUser.php?action=delete&id=<?= $user['id'] ?>"
                    class="text-red-500 hover:underline">
-                  Xóa
+                  🗑️
                 </a>
               </td>
             </tr>

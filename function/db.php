@@ -3,7 +3,9 @@ class Database {
     private $host = 'localhost';
     private $db_name = 'cinema';
     private $username = 'root';
+
     private $password = '10062005';
+
     private $port = '3306';
     private $conn;
 

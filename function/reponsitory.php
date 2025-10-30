@@ -5,10 +5,9 @@ class Repository {
     private $pdo;
     private $table;
 
-    // ✅ Khởi tạo class: truyền vào tên bảng
     public function __construct($table) {
       $db = new  Database();
-        $this->pdo = $db->connect();  // <-- Lấy kết nối từ db.php
+        $this->pdo = $db->connect();  
         $this->table = $table;
     }
 
