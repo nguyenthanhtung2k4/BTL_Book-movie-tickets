@@ -27,7 +27,10 @@ $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng
           colors: {
             primary: '#dc2626',
             'dark-bg': '#0a0a0a'
-          }
+          },
+          bboxShadow: {
+  'primary-glow': '0 0 20px rgba(255, 255, 255, 0.4), 0 0 8px rgba(255, 255, 255, 0.3)'
+}
         }
       }
     };
@@ -47,7 +50,7 @@ $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng
         <a href="#current" class="hover:text-primary">ĐANG CHIẾU</a>
         <a href="#upcoming" class="hover:text-primary">SẮP CHIẾU</a>
       </div>
-      <button class="bg-primary px-4 py-2 rounded text-black font-semibold hover:bg-red-500 transition">ĐẶT VÉ</button>
+      <a href="account.php?view=login" class="bg-primary px-4 py-2 rounded text-black font-semibold hover:bg-red-500 transition">Đăng Nhập</a>
     </nav>
   </header>
 
@@ -58,13 +61,15 @@ $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng
     Trải Nghiệm <span class="text-primary">Điện Ảnh Tối Thượng</span>
   </h1>
 
-  <div id="carousel" class="relative overflow-hidden max-w-6xl mx-auto">
+  <div id="carousel" class="relative overflow-x-hidden overflow-y-visible max-w-6xl mx-auto py-4">
     <div id="slides" class="flex transition-transform duration-[1200ms] ease-in-out">
    <?php foreach ($data as $index => $movie): ?>
-<div class="w-1/3 flex-shrink-0 p-2">
+<div class="w-1/3 flex-shrink-0 p-2 relative z-0 
+            transition-all duration-300 ease-in-out 
+            hover:scale-110 hover:z-40 hover:-translate-y-2">
   <img src="<?= htmlspecialchars($movie['banner_url'] ?? '') ?>"
-       class="w-full aspect-video object-cover rounded-lg shadow-lg"
-       alt="<?= htmlspecialchars($movie['title'] ?? 'Poster phim') ?>">
+     class="w-full aspect-video object-cover rounded-lg shadow-lg"
+     alt="<?= htmlspecialchars($movie['title'] ?? 'Poster phim') ?>">
 </div>
 <?php endforeach; ?>
     </div>
@@ -107,7 +112,9 @@ $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng
             $trailer_url = htmlspecialchars($movie['trailer_url'] ?? '#');
     ?>
 
-    <div class='bg-gray-800 rounded-xl overflow-hidden shadow-lg'>
+    <div class='bg-gray-800 rounded-xl overflow-hidden shadow-lg 
+            transition-transform duration-300 ease-in-out 
+            hover:-translate-y-2 hover:scale-105'>
        <button class="open-details-modal w-full" 
         data-movie='<?= htmlspecialchars(json_encode($movie), ENT_QUOTES, 'UTF-8'); ?>'>
     <img src='<?= $banner ?>' alt="<?= $title ?>" class='w-full h-64 object-cover'>
@@ -167,7 +174,9 @@ $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng
             $trailer_url = htmlspecialchars($movie['trailer_url'] ?? '#');
     ?>
 
-    <div class='bg-gray-800 rounded-xl overflow-hidden shadow-lg'>
+    <div class='bg-gray-800 rounded-xl overflow-hidden shadow-lg 
+            transition-transform duration-300 ease-in-out 
+            hover:-translate-y-2 hover:scale-105'>
         <button class="open-details-modal w-full" 
         data-movie='<?= htmlspecialchars(json_encode($movie), ENT_QUOTES, 'UTF-8'); ?>'>
     <img src='<?= $banner ?>' alt="<?= $title ?>" class='w-full h-64 object-cover'>
@@ -203,7 +212,6 @@ $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng
   </div>
 </section>
   </main>
-
   <footer id="contact" class="bg-gray-900 border-t border-primary/20 mt-10">
      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-gray-400">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
