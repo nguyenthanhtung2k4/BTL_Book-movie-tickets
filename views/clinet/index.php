@@ -45,21 +45,39 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
 
 <body class="bg-dark-bg text-gray-100 font-[Inter] pt-16" onload="lucide.createIcons();">
 
-  <header class="fixed top-0 w-full bg-dark-bg/90 backdrop-blur-md shadow-lg z-50">
+<header class="fixed top-0 w-full bg-dark-bg/90 backdrop-blur-md shadow-lg z-50">
     <nav class="max-w-7xl mx-auto flex justify-between items-center p-4">
-      <a href="#" class="flex items-center space-x-2">
+      
+      <a href="index.php" class="flex items-center space-x-2">
         <i data-lucide='popcorn' class='text-primary'></i>
         <span class="font-bold text-2xl">SCARLET CINEMA</span>
       </a>
+      
       <div class="hidden md:flex space-x-6">
         <a href="#featured" class="hover:text-primary">NỔI BẬT</a>
         <a href="#current" class="hover:text-primary">ĐANG CHIẾU</a>
         <a href="#upcoming" class="hover:text-primary">SẮP CHIẾU</a>
       </div>
-      <a href="account.php?view=login" class="bg-primary px-4 py-2 rounded text-black font-semibold hover:bg-red-500 transition">Đăng Nhập</a>
+      
+      <div class="flex items-center space-x-4">
+        <?php if (isset($_SESSION['user'])): ?>
+            <span class="text-gray-300">
+                Xin chào, 
+                <a href="profile.php" class="font-bold text-white hover:text-primary">
+                    <?= htmlspecialchars($_SESSION['user']['full_name']) ?>
+                </a>
+            </span>
+            <a href="logout.php" class="bg-gray-700 px-4 py-2 rounded text-white font-semibold hover:bg-gray-600 transition">
+                Đăng Xuất
+            </a>
+        <?php else: ?>
+            <a href="account.php?view=login" class="bg-primary px-4 py-2 rounded text-black font-semibold hover:bg-red-500 transition">
+                Đăng Nhập
+            </a>
+        <?php endif; ?>
+      </div>
     </nav>
-  </header>
-
+</header>
 
       <?php if ($flash_message): ?>
         <div id="flash-message" class="fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-xl text-white font-semibold 
