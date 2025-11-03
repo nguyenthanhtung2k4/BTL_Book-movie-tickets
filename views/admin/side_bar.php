@@ -1,7 +1,7 @@
 <?php
 $baseUrl = "/BTL_Book_movie_tickets/views/admin";
 
-$adminName = "Admin Scarlet";
+$adminName = "Admin tungnt";
 // $title= "ADMIN";
 
 ?>
@@ -23,7 +23,6 @@ $adminName = "Admin Scarlet";
 <body class="bg-gray-900 text-gray-100" onload="lucide.createIcons();">
 
   <div class="flex min-h-screen">
-    <!-- SIDEBAR -->
     <aside class="sidebar w-64 p-5 flex flex-col">
       <div class="flex items-center space-x-2 mb-8">
         <i data-lucide="popcorn" class="text-red-600 h-6 w-6"></i>
@@ -41,10 +40,16 @@ $adminName = "Admin Scarlet";
           <i data-lucide="film" class="inline w-4 h-4 mr-2"></i>Quản lý phim
         </a>
         <a href="<?= $baseUrl?>/theaters.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
-          <i data-lucide="theaters" class="inline w-4 h-4 mr-2"></i>Quản lý rạp
+          <i data-lucide="building" class="inline w-4 h-4 mr-2"></i>Quản lý rạp
         </a>
-        <a href="<?= $baseUrl?>/booking.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
-          <i data-lucide="ticket" class="inline w-4 h-4 mr-2"></i>Quản lý vé
+        <a href="<?= $baseUrl?>/screens.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
+          <i data-lucide="monitor" class="inline w-4 h-4 mr-2"></i>Quản lý phòng chiếu
+        </a>
+        <a href="<?= $baseUrl?>/shows.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
+          <i data-lucide="calendar-days" class="inline w-4 h-4 mr-2"></i>Quản lý suất chiếu
+        </a>
+        <a href="<?= $baseUrl?>/bookings.php" class="block p-2 rounded hover:bg-gray-700 font-medium text-gray-300">
+          <i data-lucide="receipt" class="inline w-4 h-4 mr-2"></i>Quản lý đơn đặt vé
         </a>
       </nav>
 
@@ -53,5 +58,3 @@ $adminName = "Admin Scarlet";
         <a href="../login.php" class="text-gray-400 hover:text-red-500 mt-2 block">Đăng xuất</a>
       </div>
     </aside>
-
-    

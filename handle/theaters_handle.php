@@ -1,4 +1,5 @@
 <?php
+// theaters_handle.php
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../function/reponsitory.php';
@@ -88,5 +89,5 @@ if ($action === 'delete') {
     exit;
 }
 
-header('Location: ../views/admin/theaters.php');
-exit;
+// header('Location: ../admin/theaters.php');
+// exit;

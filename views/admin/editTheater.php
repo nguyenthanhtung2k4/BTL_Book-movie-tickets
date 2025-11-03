@@ -27,6 +27,8 @@ if (!$theater) {
     header('Location: theaters.php');
     exit;
 }
+$URL= '../../handle/theaters_handle.php';
+
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +47,7 @@ if (!$theater) {
   </div>
 
   <!-- LƯU Ý: gửi action=edit và id qua query string để handler dễ đọc -->
-  <form action="../../handle/theaters_handle.php?action=edit&id=<?= (int)$theaterId ?>" method="POST" class="bg-gray-800 p-8 rounded-2xl">
+  <form action="<?= $URL ?> ?action=edit&id=<?= (int)$theaterId ?>" method="POST" class="bg-gray-800 p-8 rounded-2xl">
     <!-- Hidden id (dự phòng) -->
     <input type="hidden" name="id" value="<?= htmlspecialchars($theater['id']) ?>">
 

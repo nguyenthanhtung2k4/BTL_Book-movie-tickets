@@ -4,42 +4,28 @@ $title = "Thêm phim mới";
 $pageName = "Thêm phim mới";
 
 require_once __DIR__ . "/../../function/reponsitory.php";
-require_once __DIR__ . "/../../handle/movies_handle.php"; // file xử lý chung
 require_once __DIR__ . "/side_bar.php";
 
 // Đảm bảo session khởi động
 if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+  session_start();
 }
 
+
+// Khởi tạo các biến
 $message = '';
-$success = false;
+$isSuccess = false;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = [
-        'title'         => trim($_POST['title']),
-        'duration_min'  => (int) $_POST['duration_min'],
-        'description'   => trim($_POST['description']),
-        'rating'        => trim($_POST['rating']),
-        'release_date'  => $_POST['release_date'] ?? null,
-        'banner_url'    => trim($_POST['banner_url']),
-        'trailer_url'   => trim($_POST['trailer_url']),
-        'created_at'    => date('Y-m-d H:i:s'),
-        'updated_at'    => date('Y-m-d H:i:s')
-    ];
-
-    $result = handleMovie('add', $data);
-
-    if ($result['success']) {
-        $_SESSION['flash_message'] = $result['message'];
-        $_SESSION['flash_success'] = true;
-        header("Location: movies.php");
-        exit;
-    } else {
-        $message = $result['message'];
-        $success = false;
-    }
+// 1. Lấy thông báo flash message từ Session (được gửi từ movies_handle.php)
+if (isset($_SESSION['flash_message'])) {
+  $message = $_SESSION['flash_message'];
+  $isSuccess = $_SESSION['flash_success'] ?? false;
+  unset($_SESSION['flash_message'], $_SESSION['flash_success']);
 }
+
+
+$URL="../../handle/movies_handle.php"; // file xử lý chung
+
 ?>
 
   <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
@@ -75,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   <?php endif; ?>
 
-  <form method="POST" class="max-w-4xl mx-auto bg-gray-800 p-8 sm:p-10 rounded-2xl shadow-2xl border border-gray-700 space-y-8">
+  <form method="POST" action="<?=$URL?>?action=add" class="max-w-4xl mx-auto bg-gray-800 p-8 sm:p-10 rounded-2xl shadow-2xl border border-gray-700 space-y-8">
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
 
@@ -154,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </a>
       <button type="submit"
               class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-full shadow-lg transition duration-300 transform hover:scale-[1.03] hover:shadow-blue-500/50">
-        ✅ Thêm phim mới
+         Thêm phim mới
       </button>
     </div>
   </form>

@@ -5,6 +5,12 @@ $repo =  new Repository('movies');
 $data= $repo->getAll(); 
 $today = date('Y-m-d');
 $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng";
+
+$flash_message = $_SESSION['flash_message'] ?? '';
+$flash_success = $_SESSION['flash_success'] ?? false;
+
+unset($_SESSION['flash_message'], $_SESSION['flash_success']);
+
 ?>
 
 
@@ -53,6 +59,14 @@ $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng
       <a href="account.php?view=login" class="bg-primary px-4 py-2 rounded text-black font-semibold hover:bg-red-500 transition">Đăng Nhập</a>
     </nav>
   </header>
+
+
+      <?php if ($flash_message): ?>
+        <div id="flash-message" class="fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-xl text-white font-semibold 
+            <?= $flash_success ? 'bg-green-600 border border-green-400' : 'bg-red-700 border border-red-400' ?>">
+            <?= ($flash_message) ?>
+        </div>
+    <?php endif; ?>
 
   <main class="max-w-7xl mx-auto p-6 space-y-20">
 
@@ -302,6 +316,17 @@ $siteTitle = "PHÒNG VÉ SCARLET | Trải Nghiệm Điện Ảnh Tối Thượng
     </div>
 </div>
 <script src="../../asset/js/javascript.js"></script>
+
+<script>
+    setTimeout(() => {
+        const flash = document.getElementById('flash-message');
+        if (flash) {
+            flash.style.opacity = '0';
+            flash.style.transform = 'translateY(-10px)';
+            setTimeout(() => flash.remove(), 500);
+        }
+    }, 3000); // Tăng thời gian hiển thị lên 3 giây
+</script>
 
 </body>
 </html>

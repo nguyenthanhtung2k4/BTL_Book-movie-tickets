@@ -1,30 +1,35 @@
 <?php
 // views/admin/deleteUser.php
-session_start();
-require_once __DIR__ . '/../../handle/user_handle.php'; // đường dẫn tới handle/user_handle.php — sửa nếu cần
+if (session_status() === PHP_SESSION_NONE) session_start(); 
+
+$title = "Xóa người dùng";
+$pageName = "Xóa người dùng";
+
 require_once __DIR__ . '/../../function/reponsitory.php';
 require_once __DIR__ . '/side_bar.php';
 
-$id = $_GET['id'] ?? $_POST['id'] ?? null;
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
 if (!$id || !is_numeric($id)) {
       header('Location: users.php');
       exit;
 }
 
+// Khởi tạo các biến
 $message = '';
 $isSuccess = false;
+$formData = []; // Mảng này sẽ lưu trữ dữ liệu form cũ nếu có lỗi
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['confirm'] ?? '') === 'yes') {
-      $res = handle('delete', [], (int) $id);
-      $isSuccess = $res['success'] ?? false;
-      $message = $res['message'] ?? ($isSuccess ? 'Xóa thành công' : 'Xóa thất bại');
-
-      // set flash và redirect
-      $_SESSION['flash_message'] = $message;
-      $_SESSION['flash_success'] = $isSuccess;
-      header('Location: users.php');
-      exit;
+// 1. Lấy thông báo flash message từ Session (được gửi từ user_handle.php)
+if (isset($_SESSION['flash_message'])) {
+      $message = $_SESSION['flash_message'];
+      $isSuccess = $_SESSION['flash_success'] ?? false;
+      // Xóa session để thông báo không xuất hiện lại
+      unset($_SESSION['flash_message'], $_SESSION['flash_success']);
 }
+
+$URL='../../handle/user_handle.php'; 
+
 ?>
 
 
@@ -35,6 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['confirm'] ?? '') === 'yes'
       }
 </style>
 <main class="w-full">
+
+<?php if ($message): ?>
+    <div id="flash-message" class="fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold transition-transform duration-300
+                 <?= $isSuccess ? 'bg-green-500' : 'bg-red-600' ?>">
+        <?= htmlspecialchars($message) ?>
+    </div>
+    <?php endif; ?>
+
+
       <div class="max-w-md mx-auto mt-20">
             <div class="bg-gray-800 border border-red-700 rounded-2xl p-8 text-center shadow-2xl shadow-red-900/50">
 
@@ -64,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['confirm'] ?? '') === 'yes'
                   </p>
 
                   <div class="flex flex-col sm:flex-row justify-center gap-4">
-                        <form method="POST">
+                        <form method="POST" action="<?=$URL?>?action=delete&id=<?=$id?>">
                               <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
                               <input type="hidden" name="confirm" value="yes">
                               <button type="submit"
@@ -82,6 +96,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['confirm'] ?? '') === 'yes'
             </div>
       </div>
 </main>
-</body>
+<script>
+    // Script ẩn thông báo flash message sau 3 giây
+    setTimeout(() => {
+        const flash = document.getElementById('flash-message');
+        if (flash) {
+            // Thêm transition CSS nếu chưa có để ẩn mượt mà hơn
+            flash.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            flash.style.opacity = '0';
+            flash.style.transform = 'translateY(-10px)';
+            setTimeout(() => flash.remove(), 500);
+        }
+    }, 3000); // Tăng thời gian hiển thị lên 3 giây
+</script>
 
-</html>

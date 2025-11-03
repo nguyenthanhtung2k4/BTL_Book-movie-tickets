@@ -1,4 +1,5 @@
 <?php
+// addTheater.php
 $adminName = "Admin Scarlet";
 $title = "Thêm rạp";
 $pageName = " Thêm rạp chiếu mới";
@@ -6,15 +7,15 @@ $pageName = " Thêm rạp chiếu mới";
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . "/../../function/reponsitory.php";
-require_once __DIR__ . "/../../handle/theaters_handle.php";
 require_once __DIR__ . "/side_bar.php";
-addClaas();
+$URL = "../../handle/theaters_handle.php";
+
 ?>
 
 <main class="flex-1 p-8 sm:p-10 min-h-screen">
   <h2 class="text-3xl font-bold text-red-500 mb-8"><?= $pageName ?></h2>
 
-  <form method="POST" class="bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700 space-y-6">
+  <form action="<?= $URL ?>?action=add" method="POST" class="bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700 space-y-6">
     <div>
       <label class="block text-gray-300 font-medium mb-2">🎬 Tên rạp</label>
       <input type="text" name="name" required class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-gray-100 focus:ring-2 focus:ring-red-500">

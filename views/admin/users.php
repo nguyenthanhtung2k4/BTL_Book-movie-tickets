@@ -8,10 +8,33 @@ require_once __DIR__ . "/side_bar.php";
 
 $userRepo = new Repository('users');
 $users = $userRepo->getAllTimeDESC();
+if (session_status() === PHP_SESSION_NONE)
+    session_start();
+// Khởi tạo các biến
+$message = '';
+$isSuccess = false;
+
+if (isset($_SESSION['flash_message'])) {
+    $message = $_SESSION['flash_message'];
+    $isSuccess = $_SESSION['flash_success'] ?? false;
+    // Xóa session để thông báo không xuất hiện lại
+    unset($_SESSION['flash_message'], $_SESSION['flash_success']);
+}
+
+
 
 ?>
 
 <main class="flex-1 p-10 text-white">
+   
+<!--  Thông báo nổi bên phải -->
+    <?php if ($message): ?>
+    <div id="flash-message" class="fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold transition-transform duration-300
+                 <?= $isSuccess ? 'bg-green-500' : 'bg-red-600' ?>">
+        <?= htmlspecialchars($message) ?>
+    </div>
+    <?php endif; ?>
+
   <h2 class="text-3xl font-bold text-red-500 mb-6"><?= $pageName ?></h2>
 
   <div class="mb-6">
@@ -61,3 +84,13 @@ $users = $userRepo->getAllTimeDESC();
     </table>
   </div>
 </main>
+<script>
+    setTimeout(() => {
+        const flash = document.getElementById('flash-message');
+        if (flash) {
+            flash.style.opacity = '0';
+            flash.style.transform = 'translateY(-10px)';
+            setTimeout(() => flash.remove(), 500);
+        }
+    }, 3000); // Tăng thời gian hiển thị lên 3 giây
+</script>
