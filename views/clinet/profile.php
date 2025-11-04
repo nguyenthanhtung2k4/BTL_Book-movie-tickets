@@ -2,19 +2,17 @@
 // Luôn bắt đầu session ở đầu tệp
 session_start();
 
-// Tải tCpc tệp xử lý và repository
+// Tải các tệp xử lý và repository
 require_once __DIR__ . '/../../handle/user_handle.php';
 require_once __DIR__ . '/../../function/reponsitory.php';
+require_once __DIR__ . '/../../function/auth_helper.php';
 
 // 1. KIỂM TRA XÁC THỰC
-// Nếu chưa đăng nhập, đá về trang login
-if (!isset($_SESSION['user'])) {
-    header('Location: account.php?view=login');
-    exit;
-}
+// Bắt buộc đăng nhập để xem profile
+requireLogin();
 
 // Lấy ID người dùng từ session
-$user_id = $_SESSION['user']['id'];
+$user_id = getUserId();
 $repo = new Repository('users');
 
 // Lấy thông tin người dùng MỚI NHẤT từ CSDL
@@ -25,6 +23,20 @@ if (!$user) {
     header('Location: ../../logout.php');
     exit;
 }
+
+// Lấy danh sách đơn đặt vé của người dùng
+$bookingRepo = new Repository('bookings');
+$bookingItemRepo = new Repository('booking_items');
+$movieRepo = new Repository('movies');
+$showRepo = new Repository('shows');
+
+// Lấy tất cả booking của user, sắp xếp mới nhất lên đầu
+$userBookings = $bookingRepo->getByCondition(
+    "user_id = :user_id",
+    ['user_id' => $user_id],
+    "*",
+    "created_at DESC"
+);
 
 // Biến để lưu thông báo
 $profile_message = '';
@@ -243,6 +255,172 @@ $userName = htmlspecialchars($user['full_name']);
                 </p>
             <?php endif; ?>
         </form>
+    </div>
+
+    <!-- Lịch Sử Đặt Vé -->
+    <div class="bg-gray-800 p-8 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+            <i data-lucide="ticket" class="w-6 h-6 text-primary"></i>
+            Lịch Sử Đặt Vé
+        </h2>
+        
+        <?php if (empty($userBookings)): ?>
+            <div class="text-center py-12">
+                <i data-lucide="inbox" class="w-16 h-16 mx-auto text-gray-600 mb-4"></i>
+                <p class="text-gray-400 text-lg mb-4">Bạn chưa có đơn đặt vé nào.</p>
+                <a href="index.php" class="inline-block bg-primary text-black px-6 py-3 rounded-lg font-semibold hover:bg-red-500 transition">
+                    Đặt vé ngay
+                </a>
+            </div>
+        <?php else: ?>
+            <div class="space-y-4">
+                <?php foreach ($userBookings as $booking): 
+                    // Lấy thông tin show và movie
+                    $show = $showRepo->find($booking['show_id']);
+                    $movie = $show ? $movieRepo->find($show['movie_id']) : null;
+                    
+                    // Lấy chi tiết các vé (booking items)
+                    $items = $bookingItemRepo->findAllBy('booking_id', $booking['id']);
+                    
+                    // Đếm số ghế
+                    $seatCodes = array_column($items, 'seat_code');
+                    $seatList = implode(', ', $seatCodes);
+                    
+                    // Xác định màu trạng thái
+                    $statusColors = [
+                        'pending' => 'bg-yellow-500/20 text-yellow-300',
+                        'confirmed' => 'bg-green-500/20 text-green-300',
+                        'cancelled' => 'bg-red-500/20 text-red-300',
+                        'expired' => 'bg-gray-500/20 text-gray-300'
+                    ];
+                    $statusLabels = [
+                        'pending' => 'Chờ xử lý',
+                        'confirmed' => 'Đã xác nhận',
+                        'cancelled' => 'Đã hủy',
+                        'expired' => 'Hết hạn'
+                    ];
+                    $statusColor = $statusColors[$booking['status']] ?? 'bg-gray-500/20 text-gray-300';
+                    $statusLabel = $statusLabels[$booking['status']] ?? $booking['status'];
+                    
+                    $paymentStatusColors = [
+                        'unpaid' => 'bg-red-500/20 text-red-300',
+                        'paid' => 'bg-green-500/20 text-green-300',
+                        'refunded' => 'bg-blue-500/20 text-blue-300'
+                    ];
+                    $paymentStatusLabels = [
+                        'unpaid' => 'Chưa thanh toán',
+                        'paid' => 'Đã thanh toán',
+                        'refunded' => 'Đã hoàn tiền'
+                    ];
+                    $paymentColor = $paymentStatusColors[$booking['payment_status']] ?? 'bg-gray-500/20 text-gray-300';
+                    $paymentLabel = $paymentStatusLabels[$booking['payment_status']] ?? $booking['payment_status'];
+                ?>
+                
+                <div class="bg-gray-700/50 rounded-lg p-5 border border-gray-600 hover:border-primary transition">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <!-- Poster phim -->
+                        <?php if ($movie): ?>
+                            <div class="flex-shrink-0">
+                                <img src="<?= htmlspecialchars($movie['banner_url'] ?? '') ?>" 
+                                     alt="<?= htmlspecialchars($movie['title'] ?? '') ?>"
+                                     class="w-24 h-32 object-cover rounded-lg">
+                            </div>
+                        <?php endif; ?>
+                        
+                        <!-- Thông tin đơn hàng -->
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-3">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white mb-1">
+                                        <?= htmlspecialchars($movie['title'] ?? 'Không xác định') ?>
+                                    </h3>
+                                    <p class="text-sm text-gray-400">
+                                        Mã đơn: <span class="font-mono text-primary">#<?= $booking['id'] ?></span>
+                                    </p>
+                                </div>
+                                <div class="text-right space-y-1">
+                                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold <?= $statusColor ?>">
+                                        <?= $statusLabel ?>
+                                    </span>
+                                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold <?= $paymentColor ?>">
+                                        <?= $paymentLabel ?>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-300">
+                                <div>
+                                    <i data-lucide="calendar" class="inline w-4 h-4 mr-1 text-primary"></i>
+                                    <span>Suất chiếu: <?= $show ? date('d/m/Y H:i', strtotime($show['show_time'])) : 'N/A' ?></span>
+                                </div>
+                                <div>
+                                    <i data-lucide="armchair" class="inline w-4 h-4 mr-1 text-primary"></i>
+                                    <span>Ghế: <?= htmlspecialchars($seatList ?: 'N/A') ?></span>
+                                </div>
+                                <div>
+                                    <i data-lucide="banknote" class="inline w-4 h-4 mr-1 text-primary"></i>
+                                    <span>Tổng tiền: <strong class="text-green-400"><?= number_format($booking['total_amount'], 0, ',', '.') ?>₫</strong></span>
+                                </div>
+                                <div>
+                                    <i data-lucide="credit-card" class="inline w-4 h-4 mr-1 text-primary"></i>
+                                    <span>Thanh toán: <?= htmlspecialchars($booking['payment_method'] ?? 'N/A') ?></span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 pt-3 border-t border-gray-600 text-xs text-gray-500">
+                                Đặt lúc: <?= date('d/m/Y H:i:s', strtotime($booking['created_at'])) ?>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chi tiết vé -->
+                    <?php if (!empty($items)): ?>
+                        <details class="mt-4">
+                            <summary class="cursor-pointer text-sm text-primary hover:text-red-400 font-semibold">
+                                Xem chi tiết vé (<?= count($items) ?> vé)
+                            </summary>
+                            <div class="mt-3 bg-gray-800/50 rounded-lg p-3">
+                                <table class="w-full text-sm">
+                                    <thead class="border-b border-gray-600">
+                                        <tr class="text-left text-gray-400">
+                                            <th class="pb-2">Mã ghế</th>
+                                            <th class="pb-2">Loại vé</th>
+                                            <th class="pb-2">Giá</th>
+                                            <th class="pb-2">Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-gray-300">
+                                        <?php foreach ($items as $item): 
+                                            $itemStatusColors = [
+                                                'booked' => 'text-yellow-300',
+                                                'cancelled' => 'text-red-300',
+                                                'checked_in' => 'text-green-300'
+                                            ];
+                                            $itemStatusLabels = [
+                                                'booked' => 'Đã đặt',
+                                                'cancelled' => 'Đã hủy',
+                                                'checked_in' => 'Đã check-in'
+                                            ];
+                                        ?>
+                                            <tr class="border-b border-gray-700/50">
+                                                <td class="py-2 font-bold text-primary"><?= htmlspecialchars($item['seat_code']) ?></td>
+                                                <td class="py-2"><?= ucfirst($item['ticket_type']) ?></td>
+                                                <td class="py-2 text-green-400"><?= number_format($item['ticket_price'], 0, ',', '.') ?>₫</td>
+                                                <td class="py-2 <?= $itemStatusColors[$item['status']] ?? 'text-gray-400' ?>">
+                                                    <?= $itemStatusLabels[$item['status']] ?? $item['status'] ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    <?php endif; ?>
+                </div>
+                
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
   </main>
   

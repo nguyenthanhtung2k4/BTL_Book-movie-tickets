@@ -110,13 +110,11 @@ $view_from_form = $_POST['view'] ?? $_GET['view'] ?? '';
 // 1. Xử lý ĐĂNG KÝ (REGISTER) - Dùng POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'register') {
      
-     // ... (Giữ nguyên logic xử lý đăng ký) ...
      $data = [
           'full_name' => trim($_POST['fullname'] ?? ''),
           'email' => trim($_POST['email'] ?? ''),
           'password_hash' => password_hash($_POST['password'] ?? '', PASSWORD_DEFAULT),
-          'role' => 'customer',
-          'created_at' => date('Y-m-d H:i:s'),
+          'role' => 'customer' // QUAN TRỌNG: Phải là 'customer' để khớp với ENUM trong database
      ];
 
      if (($_POST['password'] ?? '') !== ($_POST['confirmPassword'] ?? '')) {
@@ -138,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'register') {
      $_SESSION['flash_message'] = $res['message'];
      $_SESSION['flash_success'] = $res['success'];
 
-     // **SỬA LỖI CHUYỂN HƯỚNG:** Quay về trang form account.php
+     // Quay về trang form account.php
      header('Location: ' . $redirect_url . '?view=' . $_SESSION['flash_view']); 
      exit;
 }

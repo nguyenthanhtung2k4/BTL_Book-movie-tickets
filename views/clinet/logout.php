@@ -1,13 +1,27 @@
 <?php
-// Luôn bắt đầu session
+/**
+ * Logout Handler
+ * Xử lý đăng xuất người dùng
+ */
+
 session_start();
 
-// Hủy tất cả dữ liệu session (xóa thông tin đăng nhập)
-session_unset();
+// Xóa tất cả session variables
+$_SESSION = array();
+
+// Hủy session cookie
+if (isset($_COOKIE[session_name()])) {
+    setcookie(session_name(), '', time() - 42000, '/');
+}
+
+// Hủy session
 session_destroy();
 
-// Chuyển hướng người dùng về trang chủ
-// (Sửa lỗi: trỏ đến 'clinet' thay vì 'client')
+// Set flash message
+session_start(); // Start lại session để set message
+$_SESSION['flash_message'] = 'Đã đăng xuất thành công!';
+$_SESSION['flash_success'] = true;
+
+// Redirect về trang chủ
 header('Location: index.php');
 exit;
-?>

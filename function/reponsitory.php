@@ -3,7 +3,7 @@ require_once __DIR__ . '/db.php';
 
 class Repository
 {
-    private $pdo;
+    public $pdo; // Changed to public for lastInsertId access
     private $table;
 
     public function __construct($table)
@@ -272,4 +272,67 @@ class Repository
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
+    /**
+     * Lấy các bản ghi từ CSDL dựa trên điều kiện WHERE.
+     * Sử dụng prepared statements để đảm bảo an toàn.
+     *
+     * @param string $whereCondition Ví dụ: "column1 = :value1 AND column2 > :value2"
+     * @param array $params Mảng key-value (tên placeholder => giá trị) cho prepared statement.
+     * @param string $columns Các cột muốn chọn. Mặc định là "*" (tất cả).
+     * @param string $orderBy Mệnh đề ORDER BY tùy chọn. Ví dụ: "created_at DESC"
+     * @return array Mảng chứa các bản ghi (mảng kết hợp), hoặc mảng rỗng nếu không tìm thấy.
+     */
+    public function getByCondition(string $whereCondition, array $params = [], string $columns = "*", string $orderBy = ""): array
+    {
+        // Xây dựng câu truy vấn SQL
+        $sql = "SELECT $columns FROM {$this->table} WHERE {$whereCondition}";
+
+        if (!empty($orderBy)) {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+
+        try {
+            // Chuẩn bị câu lệnh
+            $stmt = $this->pdo->prepare($sql);
+
+            // Gán các giá trị cho prepared statement
+            foreach ($params as $key => &$value) {
+                // Kiểm tra xem key có bắt đầu bằng ':' không (nếu là named placeholder)
+                // PDO::bindParam/bindValue yêu cầu không có dấu ':' ở đầu tên tham số
+                $bindKey = strpos($key, ':') === 0 ? substr($key, 1) : $key;
+
+                // Nếu bạn dùng named placeholder trong $whereCondition (ví dụ: `WHERE id = :id`), 
+                // bạn nên dùng $key chính xác từ $params
+                $stmt->bindValue(":$key", $value);
+            }
+
+            // Thực thi câu lệnh
+            $stmt->execute();
+
+            // Lấy tất cả kết quả dưới dạng mảng kết hợp
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            // Xử lý lỗi (ví dụ: ghi log hoặc ném ngoại lệ)
+            // Trong môi trường development, bạn có thể in ra lỗi để debug:
+            // error_log("Database Error in getByCondition: " . $e->getMessage());
+            // echo "Database Error: " . $e->getMessage();
+            return [];
+        }
+    }
+
+    // Hàm này được thêm vào để hỗ trợ logic booking_process
+    public function runRawQuery(string $sql, array $params = []): array
+    {
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params); // Sử dụng mảng vị trí cho execute nếu query dùng '?'
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // error_log("Database Error in runRawQuery: " . $e->getMessage());
+            return [];
+        }
+    }
+
 }

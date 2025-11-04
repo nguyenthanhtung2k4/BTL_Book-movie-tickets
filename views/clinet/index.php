@@ -1,8 +1,10 @@
 <?php
-$siteTitle = 'Home| SCARLET CINEMA';
-
 session_start();
+
+$siteTitle = 'Home | SCARLET CINEMA';
+
 require_once __DIR__ . "/../../function/reponsitory.php";
+require_once __DIR__ . "/../../function/auth_helper.php";
 require_once __DIR__ . "/header.php";
 
 $repo = new Repository('movies');
@@ -163,10 +165,8 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
                             </p>
 
                             <div class="flex gap-2">
-                                <button
-                                    class='flex-1 bg-primary text-black py-2 rounded font-semibold opacity-80 cursor-default'>Sắp
-                                    khởi chiếu</button>
-
+                                <a href="booking.php?movie_id=<?= htmlspecialchars($movie['id']) ?>"
+                                    class='flex-1 bg-primary text-black py-2 rounded font-semibold hover:bg-red-500 transition text-center'>Sắp khởi chiếu</a>
                                 <?php if ($trailer_url !== '#'): ?>
                                     <button data-trailer-url="<?= $trailer_url ?>"
                                         class='open-trailer-modal flex-1 bg-gray-700 text-white py-2 rounded text-center hover:bg-gray-600 transition'>

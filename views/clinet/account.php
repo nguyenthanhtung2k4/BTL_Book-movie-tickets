@@ -1,25 +1,21 @@
 <?php
-// Luôn bắt đầu session ở đầu tệp
 session_start();
 
-// Tải tệp xử lý logic và repository
 require_once __DIR__ . '/../../handle/user_handle.php';
 require_once __DIR__ . '/../../function/reponsitory.php'; // Cần cho việc tìm kiếm user
 
-// Biến để lưu thông báo
 $message = '';
-$message_type = ''; // 'success' hoặc 'error'
+$message_type = ''; 
 
-// === XỬ LÝ POST REQUEST ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    // 1. XỬ LÝ ĐĂNG KÝ (Giữ nguyên)
+    // 1. XỬ LÝ ĐĂNG KÝ
     if (isset($_POST['action']) && $_POST['action'] === 'register') {
         $data = [
-            'full_name' => $_POST['fullname'] ?? '',
-            'email' => $_POST['email'] ?? '',
+            'full_name' => trim($_POST['fullname'] ?? ''),
+            'email' => trim($_POST['email'] ?? ''),
             'password_hash' => password_hash($_POST['password'] ?? '', PASSWORD_DEFAULT),
-            'role' => 'client'
+            'role' => 'customer' // SỬA: 'client' -> 'customer' để khớp với ENUM trong database
         ];
 
         if ($_POST['password'] !== $_POST['confirmPassword']) {
@@ -32,10 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // 2. === LOGIC ĐĂNG NHẬP MỚI ===
+    // 2. LOGIC ĐĂNG NHẬP
     if (isset($_POST['action']) && $_POST['action'] === 'login') {
         $repo = new Repository('users');
-        $email = $_POST['email'] ?? '';
+        $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
 
         // Tìm người dùng bằng email
@@ -52,9 +48,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'role' => $user['role']
             ];
 
-            // Chuyển hướng về trang chủ
-            header('Location: index.php');
-            exit; // Luôn exit sau khi chuyển hướng
+            // Thông báo thành công
+            $_SESSION['flash_message'] = '✅ Đăng nhập thành công!';
+            $_SESSION['flash_success'] = true;
+
+            // Chuyển hướng dựa theo role
+            if ($user['role'] === 'admin') {
+                header('Location: ../admin/index.php');
+            } else {
+                header('Location: index.php');
+            }
+            exit;
         } else {
             // Đăng nhập thất bại
             $message = '❌ Sai thông tin email hoặc mật khẩu.';
@@ -62,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // 3. (Logic Quên Mật Khẩu...)
 }
 
 // Quyết định thanh trượt bắt đầu ở đâu
@@ -254,11 +257,11 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
             const email = document.getElementById('forgotEmail').value.trim();
             if (!email.includes('@')) {
                 msgForgot.classList.replace('text-gray-300', 'text-red-400');
-                msgForgot.textContent = '❌ Email không hợp lệ.';
+                msgForgot.textContent = ' Email không hợp lệ.';
                 return;
             }
             msgForgot.classList.replace('text-gray-300', 'text-green-400');
-            msgForgot.textContent = `✅ Liên kết khôi phục đã được gửi.`;
+            msgForgot.textContent = ` Liên kết khôi phục đã được gửi.`;
           }, 1000);
         });
     }

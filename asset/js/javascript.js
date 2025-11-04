@@ -134,9 +134,6 @@ function closeTrailerModal(event) {
 }
 
 
-// ------------------------------------------------------------------
-// === CÁC HÀM XỬ LÝ MÔ TẢ PHIM (FIX HOÀN TOÀN LỖI CKEditor) ===
-// ------------------------------------------------------------------
 
 /**
  * Hàm làm sạch và định dạng mô tả phim từ database.
@@ -146,20 +143,15 @@ function closeTrailerModal(event) {
 function sanitizeAndFormatDescription(rawDescription) {
     if (!rawDescription) return 'Chưa có mô tả cho phim này.';
     
-    // ⭐ BƯỚC 1: GIẢI MÃ (UNESCAPE) - FIX LỖI HIỂN THỊ THẺ HTML
-    // Thay thế các entity cơ bản mà PHP/JSON có thể tạo ra
+  
     let cleanDescription = rawDescription
         .replace(/&lt;/g, '<') // Giải mã &lt; thành <
         .replace(/&gt;/g, '>') // Giải mã &gt; thành >
         .replace(/&amp;/g, '&'); // Giải mã &amp; thành & (để entity như &nbsp; được giữ lại)
 
-    // BƯỚC 2: LÀM SẠCH CÁC THẺ THỪA CỦA CKEditor
     
-    // 2.1. Loại bỏ các thẻ <p>...</p> rỗng (chỉ chứa khoảng trắng, &nbsp;, hoặc rỗng)
-    // Regex: <p>(\s|&nbsp;)*<\/p>
     cleanDescription = cleanDescription.replace(/<p>(\s|&nbsp;)*<\/p>/gi, ''); 
     
-    // 2.2. Loại bỏ các ký tự &nbsp; còn sót lại bên ngoài thẻ (nếu có)
     cleanDescription = cleanDescription.replace(/&nbsp;/gi, ' ');
     
     // 2.3. Trim khoảng trắng thừa ở đầu/cuối chuỗi
@@ -200,11 +192,9 @@ function openDetailsModal(movieData) {
         release.innerHTML = '📅 N/A';
     }
 
-    // ⭐ Áp dụng hàm làm sạch và giải mã để RENDER ĐÚNG ĐỊNH DẠNG HTML
     const formattedDesc = sanitizeAndFormatDescription(movie.description);
     desc.innerHTML = formattedDesc; // Gán bằng innerHTML để trình duyệt thực thi các thẻ <p>, <h1>, v.v.
 
-    // --- XỬ LÝ NÚT TRAILER TRONG MODAL CHI TIẾT ---
     
     // Tạo lại nút Trailer để gỡ bỏ mọi sự kiện click cũ
     const newTrailerButton = trailerButton.cloneNode(true);

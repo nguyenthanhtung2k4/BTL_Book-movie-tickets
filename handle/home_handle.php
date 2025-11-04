@@ -11,7 +11,7 @@ function handleMovie($action, $data = [], $id = null) {
             // Kiểm tra trùng tên phim
             $exist = $repo->findBy('title', $data['title']);
             if ($exist) {
-                $response['message'] = '⚠️ Phim này đã tồn tại trong hệ thống.';
+                $response['message'] = ' Phim này đã tồn tại trong hệ thống.';
                 return $response;
             }
 
