@@ -1,7 +1,7 @@
 // === CAROUSEL SLIDESHOW - VÒNG TRÒN LIÊN TỤC ===
 document.addEventListener("DOMContentLoaded", function () {
   
-  //--- Bắt đầu Code Carousel (giữ nguyên) ---
+  //--- Code Carousel (giữ nguyên) ---
   const slides = document.getElementById("slides");
   if (slides) {
       const slideItems = slides.children;
@@ -62,10 +62,8 @@ document.addEventListener("DOMContentLoaded", function () {
           prevBtn.addEventListener("click", prevSlide);
       }
   }
-  //--- Kết thúc Code Carousel ---
 
-
-  // === Logic Lắng nghe nút Trailer Modal (Giữ nguyên) ===
+  // === Logic Lắng nghe nút Trailer trên Card Phim ===
   document.querySelectorAll('.open-trailer-modal').forEach(button => {
       button.addEventListener('click', (e) => {
           e.preventDefault();
@@ -76,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   });
 
-  // === CODE MỚI: Logic Lắng nghe nút Chi Tiết Phim ===
+  // === Logic Lắng nghe nút Chi Tiết Phim (Ảnh Poster) ===
   document.querySelectorAll('.open-details-modal').forEach(button => {
       button.addEventListener('click', (e) => {
           e.preventDefault();
@@ -91,7 +89,10 @@ document.addEventListener("DOMContentLoaded", function () {
 //--- Hết DOMContentLoaded ---
 
 
+// ------------------------------------------------------------------
 // === Các hàm cho Trailer Modal (Giữ nguyên) ===
+// ------------------------------------------------------------------
+
 function convertToEmbedUrl(url) {
     if (!url) return '';
     url = url.replace('http:', 'https:');
@@ -133,25 +134,58 @@ function closeTrailerModal(event) {
 }
 
 
-// === CÁC HÀM MỚI CHO MODAL CHI TIẾT PHIM ===
+// ------------------------------------------------------------------
+// === CÁC HÀM XỬ LÝ MÔ TẢ PHIM (FIX HOÀN TOÀN LỖI CKEditor) ===
+// ------------------------------------------------------------------
+
+/**
+ * Hàm làm sạch và định dạng mô tả phim từ database.
+ * 1. UNESCAPE: Giải mã HTML entities (fix lỗi <p> hiển thị dưới dạng văn bản).
+ * 2. CLEANUP: Loại bỏ các đoạn văn bản thừa, rỗng do CKEditor tạo ra (<p>&nbsp;</p>).
+ */
+function sanitizeAndFormatDescription(rawDescription) {
+    if (!rawDescription) return 'Chưa có mô tả cho phim này.';
+    
+    // ⭐ BƯỚC 1: GIẢI MÃ (UNESCAPE) - FIX LỖI HIỂN THỊ THẺ HTML
+    // Thay thế các entity cơ bản mà PHP/JSON có thể tạo ra
+    let cleanDescription = rawDescription
+        .replace(/&lt;/g, '<') // Giải mã &lt; thành <
+        .replace(/&gt;/g, '>') // Giải mã &gt; thành >
+        .replace(/&amp;/g, '&'); // Giải mã &amp; thành & (để entity như &nbsp; được giữ lại)
+
+    // BƯỚC 2: LÀM SẠCH CÁC THẺ THỪA CỦA CKEditor
+    
+    // 2.1. Loại bỏ các thẻ <p>...</p> rỗng (chỉ chứa khoảng trắng, &nbsp;, hoặc rỗng)
+    // Regex: <p>(\s|&nbsp;)*<\/p>
+    cleanDescription = cleanDescription.replace(/<p>(\s|&nbsp;)*<\/p>/gi, ''); 
+    
+    // 2.2. Loại bỏ các ký tự &nbsp; còn sót lại bên ngoài thẻ (nếu có)
+    cleanDescription = cleanDescription.replace(/&nbsp;/gi, ' ');
+    
+    // 2.3. Trim khoảng trắng thừa ở đầu/cuối chuỗi
+    cleanDescription = cleanDescription.trim();
+    
+    // Trả về chuỗi HTML HỢP LỆ đã được làm sạch.
+    return cleanDescription;
+}
 
 // Hàm mở Modal Chi Tiết
 function openDetailsModal(movieData) {
     const modal = document.getElementById('detailsModal');
     if (!modal) return;
 
-    // Chuyển chuỗi JSON từ data-movie thành đối tượng
     const movie = JSON.parse(movieData);
 
-    // Tìm các phần tử trong modal chi tiết
     const img = document.getElementById('modalDetailsImage');
     const title = document.getElementById('modalDetailsTitle');
     const rating = document.getElementById('modalDetailsRating');
     const duration = document.getElementById('modalDetailsDuration');
     const release = document.getElementById('modalDetailsRelease');
-    const desc = document.getElementById('modalDetailsDesc');
+    const desc = document.getElementById('modalDetailsDesc'); // Vị trí đổ mô tả
+    const trailerButton = document.getElementById('modalDetailsTrailerBtn'); 
+    const bookingButton = document.getElementById('modalDetailsBookingBtn');
 
-    // Đổ dữ liệu vào modal
+    // Đổ dữ liệu
     img.src = movie.banner_url || '../../asset/img/no-banner.png';
     img.alt = movie.title || 'Poster';
     title.textContent = movie.title || 'Không có tiêu đề';
@@ -159,7 +193,6 @@ function openDetailsModal(movieData) {
     rating.innerHTML = `⭐ ${movie.rating || 'N/A'}`;
     duration.innerHTML = `⏱️ ${movie.duration_min || 'N/A'} phút`;
     
-    // Định dạng lại ngày tháng (dd/mm/yyyy)
     if (movie.release_date) {
         const date = new Date(movie.release_date);
         release.innerHTML = `📅 ${date.toLocaleDateString('vi-VN')}`;
@@ -167,17 +200,42 @@ function openDetailsModal(movieData) {
         release.innerHTML = '📅 N/A';
     }
 
-    desc.textContent = movie.description || 'Chưa có mô tả cho phim này.';
+    // ⭐ Áp dụng hàm làm sạch và giải mã để RENDER ĐÚNG ĐỊNH DẠNG HTML
+    const formattedDesc = sanitizeAndFormatDescription(movie.description);
+    desc.innerHTML = formattedDesc; // Gán bằng innerHTML để trình duyệt thực thi các thẻ <p>, <h1>, v.v.
+
+    // --- XỬ LÝ NÚT TRAILER TRONG MODAL CHI TIẾT ---
+    
+    // Tạo lại nút Trailer để gỡ bỏ mọi sự kiện click cũ
+    const newTrailerButton = trailerButton.cloneNode(true);
+    trailerButton.parentNode.replaceChild(newTrailerButton, trailerButton);
+    
+    if (movie.trailer_url && movie.trailer_url !== '#') {
+        newTrailerButton.disabled = false;
+        newTrailerButton.classList.remove('bg-gray-600', 'opacity-60', 'cursor-not-allowed');
+        newTrailerButton.classList.add('bg-gray-700', 'hover:bg-gray-600');
+        
+        newTrailerButton.addEventListener('click', () => {
+            closeDetailsModal(); 
+            openTrailerModal(movie.trailer_url);
+        });
+    } else {
+        newTrailerButton.disabled = true;
+        newTrailerButton.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+        newTrailerButton.classList.add('bg-gray-600', 'opacity-60', 'cursor-not-allowed');
+    }
+
+    // --- XỬ LÝ NÚT ĐẶT VÉ TRONG MODAL CHI TIẾT ---
+    bookingButton.setAttribute('href', `booking.php?movie_id=${movie.id}`);
+
 
     // Hiển thị modal
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
 
-// Hàm đóng Modal Chi Tiết
 function closeDetailsModal(event) {
     const modal = document.getElementById('detailsModal');
-    // Chỉ đóng khi click vào nền (id="detailsModal") hoặc nút (closest('button'))
     if (!event || event.target.id === 'detailsModal' || event.target.closest('button')) {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
