@@ -4,7 +4,9 @@
  * Method: POST
  * Required: show_id, selected_seats (JSON), total_amount, payment_method
  */
-
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -26,6 +28,26 @@ $show_id = $_POST['show_id'] ?? null;
 $selected_seats_json = $_POST['selected_seats'] ?? null;
 $total_amount = $_POST['total_amount'] ?? 0;
 $payment_method = $_POST['payment_method'] ?? null;
+
+
+// === BẮT ĐẦU: LOGIC XỬ LÝ TRẠNG THÁI THANH TOÁN ===
+$booking_status = '';
+$payment_status = '';
+$flash_message = '';
+
+if ($payment_method === 'vnpay' || $payment_method === 'credit_card') {
+    // Nếu là VNPay (hoặc thẻ), coi như đã thanh toán thành công
+    $booking_status = 'confirmed'; // Đã xác nhận
+    $payment_status = 'paid';      // Đã thanh toán
+    $flash_message = 'Thanh toán thành công! Vé của bạn đã được xác nhận.';
+} else {
+    // Mặc định là 'cash' (tiền mặt)
+    $booking_status = 'pending'; 
+    $payment_status = 'unpaid';
+    $flash_message = 'Đặt vé thành công! Vui lòng thanh toán tại quầy.';
+}
+// === KẾT THÚC: LOGIC XỬ LÝ TRẠNG THÁI ===
+
 
 // Validate dữ liệu
 if (!$show_id || !$selected_seats_json || !$payment_method) {
@@ -80,14 +102,14 @@ try {
         }
     }
     
-    // 3. Tạo bản ghi Booking chính
+    // 3. Tạo bản ghi Booking chính (ĐÃ CẬP NHẬT TRẠNG THÁI)
     $booking_data = [
         'user_id' => $user_id,
         'show_id' => $show_id,
-        'status' => 'pending',
+        'status' => $booking_status,     // <-- Đã sửa
         'total_amount' => $total_amount,
         'payment_method' => $payment_method,
-        'payment_status' => 'unpaid'
+        'payment_status' => $payment_status  // <-- Đã sửa
     ];
     
     $bookingRepo->insert($booking_data);
@@ -144,8 +166,8 @@ try {
         $bookingItemRepo->insert($item_data);
     }
     
-    // 5. Thành công - Redirect về trang xác nhận hoặc profile
-    $_SESSION['flash_message'] = 'Đặt vé thành công! Vui lòng thanh toán tại quầy.';
+    // 5. Thành công - Redirect về trang xác nhận hoặc profile (ĐÃ CẬP NHẬT THÔNG BÁO)
+    $_SESSION['flash_message'] = $flash_message; // <-- Đã sửa
     $_SESSION['flash_success'] = true;
     
     // Redirect về trang profile hoặc booking confirmation
@@ -159,4 +181,3 @@ try {
     header('Location: ' . $_SERVER['HTTP_REFERER']);
     exit;
 }
-

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'full_name' => trim($_POST['fullname'] ?? ''),
             'email' => trim($_POST['email'] ?? ''),
             'password_hash' => password_hash($_POST['password'] ?? '', PASSWORD_DEFAULT),
-            'role' => 'customer' // SỬA: 'client' -> 'customer' để khớp với ENUM trong database
+            'role' => 'customer' 
         ];
 
         if ($_POST['password'] !== $_POST['confirmPassword']) {
@@ -34,13 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        // Tìm người dùng bằng email
         $user = $repo->findBy('email', $email);
 
-        // Kiểm tra xem $user có tồn tại VÀ mật khẩu có khớp không
         if ($user && password_verify($password, $user['password_hash'])) {
-            // Đăng nhập thành công!
-            // Lưu thông tin người dùng vào SESSION
             $_SESSION['user'] = [
                 'id' => $user['id'],
                 'full_name' => $user['full_name'],
@@ -48,11 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'role' => $user['role']
             ];
 
-            // Thông báo thành công
             $_SESSION['flash_message'] = '✅ Đăng nhập thành công!';
             $_SESSION['flash_success'] = true;
 
-            // Chuyển hướng dựa theo role
             if ($user['role'] === 'admin') {
                 header('Location: ../admin/index.php');
             } else {
@@ -60,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             exit;
         } else {
-            // Đăng nhập thất bại
             $message = '❌ Sai thông tin email hoặc mật khẩu.';
             $message_type = 'error';
         }
@@ -74,7 +67,7 @@ if ($view === 'register' || ($message_type === 'error' && isset($_POST['action']
     $view = 'register';
     $pageTitle = "Đăng Ký";
 } elseif ($message_type === 'error' && isset($_POST['action']) && $_POST['action'] === 'login') {
-    $view = 'login'; // Nếu đăng nhập lỗi, ở lại form login
+    $view = 'login'; 
     $pageTitle = "Đăng Nhập";
 } elseif ($view === 'forgot') {
     $pageTitle = "Quên Mật Khẩu";
@@ -121,7 +114,21 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
     };
   </script>
   <style>
-    body { background-color: #0a0a0a; color: #e5e7eb; font-family: 'Inter', sans-serif; }
+    /* Nền động */
+    body { 
+        background: linear-gradient(-45deg, #0a0a0a, #1f2937, #0a0a0a, #dc2626);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        color: #e5e7eb; 
+        font-family: 'Inter', sans-serif; 
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
     .btn-neon {
       background-color: var(--color-primary-hex); color: #0a0a0a; font-weight: 600;
       border-radius: 0.5rem; padding: 0.75rem 1.5rem; transition: all 0.3s ease;
@@ -129,16 +136,22 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
     }
     .btn-neon:hover { opacity: 0.9; transform: scale(1.05); }
     .form-slide { min-height: 520px; }
+    
+    /* Style cho placeholder trên nền mờ */
+    ::placeholder {
+        color: #9ca3af; 
+        opacity: 0.8;
+    }
   </style>
 </head>
 
-<body class="dark bg-dark-bg min-h-screen flex items-center justify-center" onload="applyTheme(currentTheme); lucide.createIcons();">
+<body class="dark min-h-screen flex items-center justify-center" onload="applyTheme(currentTheme); lucide.createIcons();">
   
-    <div class="bg-card-bg rounded-2xl shadow-2xl w-full max-w-md animate-fade-in overflow-hidden relative">
+    <div class="rounded-2xl shadow-2xl w-full max-w-md animate-fade-in overflow-hidden relative">
         
         <div id="form-slider" class="flex w-[200%] transition-transform duration-500 ease-in-out" style="<?= $initial_transform ?>">
 
-            <div class="w-1/2 p-8 form-slide">
+            <div class="w-1/2 p-8 form-slide bg-gray-900/75 backdrop-blur-lg border-r border-gray-700/30">
                 <div class="flex items-center justify-center space-x-2 mb-6">
                     <i data-lucide="popcorn" class="text-primary h-8 w-8"></i>
                     <h1 class="text-2xl font-bold text-white tracking-wide">SCARLET CINEMA</h1>
@@ -151,12 +164,12 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
                         <input id="email" name="email" type="email" required placeholder="nhapemail@domain.com"
-                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+                            class="w-full p-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 text-white focus:ring-primary focus:border-primary">
                     </div>
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
                         <input id="password" name="password" type="password" required placeholder="••••••••"
-                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+                            class="w-full p-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 text-white focus:ring-primary focus:border-primary">
                     </div>
                     <div class="flex items-center justify-between text-sm">
                         <button type="button" id="goToForgot" class="text-primary hover:underline font-semibold">Quên mật khẩu?</button>
@@ -176,7 +189,7 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
                 </form>
             </div>
 
-            <div class="w-1/2 p-8 form-slide">
+            <div class="w-1/2 p-8 form-slide bg-gray-900/75 backdrop-blur-lg">
                 <div class="flex items-center justify-center space-x-2 mb-6">
                     <i data-lucide="popcorn" class="text-primary h-8 w-8"></i>
                     <h1 class="text-2xl font-bold text-white tracking-wide">SCARLET CINEMA</h1>
@@ -189,22 +202,22 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
                     <div>
                         <label for="fullname" class="block text-sm font-medium text-gray-300 mb-1">Họ và Tên</label>
                         <input id="fullname" name="fullname" type="text" required placeholder="Nguyễn Văn A"
-                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+                            class="w-full p-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 text-white focus:ring-primary focus:border-primary">
                     </div>
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
                         <input id="email" name="email" type="email" required placeholder="nhapemail@domain.com"
-                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+                            class="w-full p-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 text-white focus:ring-primary focus:border-primary">
                     </div>
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
                         <input id="password" name="password" type="password" required placeholder="••••••••"
-                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+                            class="w-full p-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 text-white focus:ring-primary focus:border-primary">
                     </div>
                     <div>
                         <label for="confirmPassword" class="block text-sm font-medium text-gray-300 mb-1">Xác nhận mật khẩu</label>
                         <input id="confirmPassword" name="confirmPassword" type="password" required placeholder="Nhập lại mật khẩu"
-                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+                            class="w-full p-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 text-white focus:ring-primary focus:border-primary">
                     </div>
                     
                     <button type="submit" class="btn-neon w-full mt-4">Tạo Tài Khoản</button>
@@ -222,7 +235,9 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
                 </form>
             </div>
 
-        </div> <div id="forgot-slider" class="absolute inset-0 bg-card-bg p-8 transition-transform duration-500 ease-in-out translate-y-full form-slide">
+        </div> 
+        
+        <div id="forgot-slider" class="absolute inset-0 bg-gray-900/75 backdrop-blur-lg p-8 transition-transform duration-500 ease-in-out translate-y-full form-slide">
             <div class="flex items-center justify-center space-x-2 mb-6">
                 <i data-lucide="popcorn" class="text-primary h-8 w-8"></i>
                 <h1 class="text-2xl font-bold text-white tracking-wide">SCARLET CINEMA</h1>
@@ -233,7 +248,7 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
                     <input id="forgotEmail" name="email" type="email" required placeholder="nhapemail@domain.com"
-                        class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-primary focus:border-primary">
+                        class="w-full p-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 text-white focus:ring-primary focus:border-primary">
                 </div>
                 <button type="submit" class="btn-neon w-full mt-4">Gửi Liên Kết Khôi Phục</button>
                 <p id="forgotMessage" class="text-center text-sm mt-3 hidden"></p>
@@ -243,13 +258,14 @@ $initial_transform = ($view === 'register') ? 'transform: translateX(-50%);' : '
             </form>
         </div>
 
-    </div> <script>
+    </div> 
+    
+    <script>
     const formForgot = document.getElementById('forgotForm');
     const msgForgot = document.getElementById('forgotMessage');
     if (formForgot) {
         formForgot.addEventListener('submit', (e) => {
           e.preventDefault();
-          // ... (logic JS mô phỏng của bạn) ...
           msgForgot.classList.remove('hidden', 'text-green-400', 'text-red-400');
           msgForgot.classList.add('text-gray-300');
           msgForgot.textContent = 'Đang gửi email...';

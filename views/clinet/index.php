@@ -16,7 +16,6 @@ $flash_message = $_SESSION['flash_message'] ?? '';
 $flash_success = $_SESSION['flash_success'] ?? false;
 
 unset($_SESSION['flash_message'], $_SESSION['flash_success']);
-
 ?>
 
 
@@ -258,4 +257,4 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
 
 </html>
 
-<?= require_once __DIR__ . './footer.php';
+<?= require_once __DIR__ . '../footer.php';
