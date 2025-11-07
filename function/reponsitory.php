@@ -152,7 +152,8 @@ class Repository
     public function getTotalRevenue()
     {
         // Lưu ý: Hàm này chỉ nên chạy trên Repository của bảng 'bookings'
-        $sql = "SELECT SUM(total_amount) FROM bookings WHERE status = 'paid'"; // Giả định có cột total_amount và status
+        // Tính tổng doanh thu từ các đơn đã thanh toán (payment_status = 'paid')
+        $sql = "SELECT SUM(total_amount) FROM bookings WHERE payment_status = 'paid'";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
         return (float) $stmt->fetchColumn();
@@ -169,8 +170,9 @@ class Repository
     }
 
     /**
-     * Lấy số lượng đặt vé (đã thanh toán) theo tháng trong 5 tháng gần nhất.
+     * Lấy số lượng đặt vé (đã thanh toán) theo tháng trong N tháng gần nhất.
      * CHỈ NÊN CHẠY VỚI REPOSITORY CỦA BẢNG 'BOOKINGS'.
+     * @param int $months Số tháng muốn lấy (mặc định 5)
      * @return array Mảng kết hợp (Tháng/Năm => Số lượng đặt)
      */
     public function getMonthlyBookings(int $months = 5)
@@ -179,12 +181,13 @@ class Repository
         $sql = "
         SELECT 
             DATE_FORMAT(created_at, '%Y-%m') AS order_month,
-            COUNT(id) AS total_bookings
+            COUNT(id) AS total_bookings,
+            SUM(total_amount) AS revenue
         FROM 
             {$this->table}
         WHERE 
             created_at >= DATE_SUB(NOW(), INTERVAL :months MONTH)
-            AND status IN ('paid', 'completed') -- Giả định chỉ thống kê đơn đã thanh toán
+            AND payment_status = 'paid'
         GROUP BY 
             order_month
         ORDER BY 

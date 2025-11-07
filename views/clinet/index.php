@@ -258,4 +258,4 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
 
 </html>
 
-<?= require_once __DIR__ . './footer.php';
+<?= require_once __DIR__ . '../footer.php';

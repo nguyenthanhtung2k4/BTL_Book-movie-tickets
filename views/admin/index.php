@@ -7,17 +7,26 @@ require_once __DIR__ ."/../../function/reponsitory.php";
 
 $userRepo = new Repository('users');
 $movieRepo = new Repository('movies');
-$theaterRepo = new Repository('theaters'); // Cần Repository mới cho theaters
+$theaterRepo = new Repository('theaters');
 $bookingRepo = new Repository('bookings'); 
-$bookingItemRepo = new Repository('booking_items'); // Đã sửa lại là 'booking_item'
+$bookingItemRepo = new Repository('booking_items');
+$showRepo = new Repository('shows');
 
 // 2. LẤY DỮ LIỆU THỐNG KÊ TỔNG QUAN
 $totalUsers = $userRepo->countAll();
 $totalMovies = $movieRepo->countAll();
-$totalTheaters = $theaterRepo->countTheaters(); // Thêm thống kê rạp
+$totalTheaters = $theaterRepo->countAll(); 
 $totalBookings = $bookingRepo->countAll();
 $totalTicketsSold = $bookingItemRepo->countBookedTickets();
-$totalRevenue = $bookingRepo->getTotalRevenue() ?? 0; 
+
+// Tính tổng doanh thu (chỉ tính đơn đã thanh toán)
+$totalRevenue = $bookingRepo->getTotalRevenue() ?? 0;
+
+// Thống kê chi tiết hơn
+$paidBookings = $bookingRepo->getByCondition("payment_status = 'paid'", []);
+$pendingBookings = $bookingRepo->getByCondition("payment_status = 'unpaid' AND status = 'pending'", []);
+$totalPaidBookings = count($paidBookings);
+$totalPendingBookings = count($pendingBookings); 
 
 // LẤY DỮ LIỆU ĐỘNG CHO BIỂU ĐỒ 1 (Cột)
 $monthlyBookings = $bookingRepo->getMonthlyBookings(5); 
@@ -38,42 +47,94 @@ function generateRandomColor($index) {
     <main class="flex-1 p-10">
       <h2 class="text-3xl font-bold text-red-500 mb-6">Bảng điều khiển quản trị</h2>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-10">
+      <!-- Thống kê tổng quan -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         
-        <a href="bookings.php" class="block bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 hover:border-red-600 hover:shadow-2xl transition duration-300 col-span-2">
-            <i data-lucide="wallet" class="text-green-500 w-6 h-6 mb-2"></i>
-            <p class="text-sm uppercase text-gray-400 font-semibold">Tổng Doanh Thu</p>
-            <p class="text-3xl font-bold text-white mt-1"><?= number_format($totalRevenue, 0, ',', '.') ?>₫</p>
+        <!-- Tổng Doanh Thu -->
+        <a href="bookings.php" class="block bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-xl shadow-2xl border border-green-500/30 hover:scale-105 transition duration-300">
+            <div class="flex items-center justify-between mb-3">
+                <i data-lucide="dollar-sign" class="text-white w-10 h-10"></i>
+                <span class="text-green-200 text-sm font-semibold bg-green-700/50 px-3 py-1 rounded-full">
+                    <?= $totalPaidBookings ?> đơn
+                </span>
+            </div>
+            <p class="text-sm uppercase text-green-200 font-semibold">Tổng Doanh Thu</p>
+            <p class="text-4xl font-bold text-white mt-2"><?= number_format($totalRevenue, 0, ',', '.') ?>₫</p>
+            <p class="text-xs text-green-200 mt-2">Từ <?= $totalPaidBookings ?> đơn đã thanh toán</p>
         </a>
 
-        <a href="bookings.php" class="block bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 hover:border-red-600 hover:shadow-2xl transition duration-300">
-            <i data-lucide="receipt" class="text-blue-500 w-6 h-6 mb-2"></i>
-            <p class="text-sm uppercase text-gray-400 font-semibold">Tổng Đơn Hàng</p>
-            <p class="text-3xl font-bold text-white mt-1"><?= number_format($totalBookings) ?></p>
+        <!-- Đơn Hàng -->
+        <a href="bookings.php" class="block bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-xl shadow-2xl border border-blue-500/30 hover:scale-105 transition duration-300">
+            <div class="flex items-center justify-between mb-3">
+                <i data-lucide="shopping-cart" class="text-white w-10 h-10"></i>
+                <span class="text-blue-200 text-sm font-semibold bg-blue-700/50 px-3 py-1 rounded-full">
+                    <?= $totalPendingBookings ?> chờ
+                </span>
+            </div>
+            <p class="text-sm uppercase text-blue-200 font-semibold">Tổng Đơn Hàng</p>
+            <p class="text-4xl font-bold text-white mt-2"><?= number_format($totalBookings) ?></p>
+            <div class="mt-2 flex gap-3 text-xs text-blue-200">
+                <span>✓ <?= $totalPaidBookings ?> đã thanh toán</span>
+                <span>⏳ <?= $totalPendingBookings ?> chờ xử lý</span>
+            </div>
         </a>
 
-        <a href="bookings.php" class="block bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 hover:border-red-600 hover:shadow-2xl transition duration-300">
-            <i data-lucide="ticket" class="text-yellow-500 w-6 h-6 mb-2"></i>
-            <p class="text-sm uppercase text-gray-400 font-semibold">Tổng Vé Đã Bán</p>
-            <p class="text-3xl font-bold text-white mt-1"><?= number_format($totalTicketsSold) ?></p>
-        </a>
-        
-        <a href="movies.php" class="block bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 hover:border-red-600 hover:shadow-2xl transition duration-300">
-            <i data-lucide="film" class="text-purple-500 w-6 h-6 mb-2"></i>
-            <p class="text-sm uppercase text-gray-400 font-semibold">Tổng Phim</p>
-            <p class="text-3xl font-bold text-white mt-1"><?= number_format($totalMovies) ?></p>
+        <!-- Vé Đã Bán -->
+        <a href="bookings.php" class="block bg-gradient-to-br from-yellow-600 to-orange-700 p-6 rounded-xl shadow-2xl border border-yellow-500/30 hover:scale-105 transition duration-300">
+            <div class="flex items-center justify-between mb-3">
+                <i data-lucide="ticket" class="text-white w-10 h-10"></i>
+                <span class="text-yellow-200 text-sm font-semibold bg-yellow-700/50 px-3 py-1 rounded-full">
+                    Active
+                </span>
+            </div>
+            <p class="text-sm uppercase text-yellow-200 font-semibold">Tổng Vé Đã Bán</p>
+            <p class="text-4xl font-bold text-white mt-2"><?= number_format($totalTicketsSold) ?></p>
+            <p class="text-xs text-yellow-200 mt-2">Vé đã đặt và đã check-in</p>
         </a>
 
-        <a href="theaters.php" class="block bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 hover:border-red-600 hover:shadow-2xl transition duration-300">
-            <i data-lucide="building" class="text-indigo-500 w-6 h-6 mb-2"></i>
-            <p class="text-sm uppercase text-gray-400 font-semibold">Tổng Rạp</p>
-            <p class="text-3xl font-bold text-white mt-1"><?= number_format($totalTheaters) ?></p>
+      </div>
+
+      <!-- Thống kê phụ -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        
+        <a href="movies.php" class="block bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700 hover:border-purple-500 transition duration-300">
+            <div class="flex items-center gap-3">
+                <i data-lucide="film" class="text-purple-500 w-8 h-8"></i>
+                <div>
+                    <p class="text-xs text-gray-400 uppercase">Phim</p>
+                    <p class="text-2xl font-bold text-white"><?= number_format($totalMovies) ?></p>
+                </div>
+            </div>
+        </a>
+
+        <a href="theaters.php" class="block bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700 hover:border-indigo-500 transition duration-300">
+            <div class="flex items-center gap-3">
+                <i data-lucide="building" class="text-indigo-500 w-8 h-8"></i>
+                <div>
+                    <p class="text-xs text-gray-400 uppercase">Rạp chiếu</p>
+                    <p class="text-2xl font-bold text-white"><?= number_format($totalTheaters) ?></p>
+                </div>
+            </div>
+        </a>
+
+        <a href="shows.php" class="block bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700 hover:border-cyan-500 transition duration-300">
+            <div class="flex items-center gap-3">
+                <i data-lucide="calendar-days" class="text-cyan-500 w-8 h-8"></i>
+                <div>
+                    <p class="text-xs text-gray-400 uppercase">Suất chiếu</p>
+                    <p class="text-2xl font-bold text-white"><?= number_format($showRepo->countAll()) ?></p>
+                </div>
+            </div>
         </a>
         
-        <a href="users.php" class="block bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 hover:border-red-600 hover:shadow-2xl transition duration-300 col-span-2 sm:col-span-1">
-            <i data-lucide="users" class="text-red-500 w-6 h-6 mb-2"></i>
-            <p class="text-sm uppercase text-gray-400 font-semibold">Tổng Người Dùng</p>
-            <p class="text-3xl font-bold text-white mt-1"><?= number_format($totalUsers) ?></p>
+        <a href="users.php" class="block bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700 hover:border-red-500 transition duration-300">
+            <div class="flex items-center gap-3">
+                <i data-lucide="users" class="text-red-500 w-8 h-8"></i>
+                <div>
+                    <p class="text-xs text-gray-400 uppercase">Người dùng</p>
+                    <p class="text-2xl font-bold text-white"><?= number_format($totalUsers) ?></p>
+                </div>
+            </div>
         </a>
 
       </div>
@@ -81,8 +142,8 @@ function generateRandomColor($index) {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 lg:col-span-2">
-              <h3 class="text-xl font-semibold text-white mb-4">Thống kê số lượng đặt vé theo tháng</h3>
-              <p class="text-gray-400 mb-6">Biểu đồ thể hiện sát suất đặt vé (đơn hàng) trong 5 tháng gần nhất.</p>
+              <h3 class="text-xl font-semibold text-white mb-4">📊 Thống kê đơn hàng đã thanh toán</h3>
+              <p class="text-gray-400 mb-6">Biểu đồ thể hiện số lượng đơn đã thanh toán trong 5 tháng gần nhất.</p>
               
               <div class="h-64 flex items-end justify-between space-x-4">
                   <?php if (empty($monthlyBookings)): ?>
@@ -107,8 +168,8 @@ function generateRandomColor($index) {
           </div>
           
           <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-              <h3 class="text-xl font-semibold text-white mb-4">Phân bổ loại vé đã bán</h3>
-              <p class="text-gray-400 mb-6">Tỷ lệ vé theo loại (Người lớn, Trẻ em, Học sinh...).</p>
+              <h3 class="text-xl font-semibold text-white mb-4">🎫 Phân bổ loại vé</h3>
+              <p class="text-gray-400 mb-6">Tỷ lệ vé đã bán theo loại (Adult, Child, Senior, Student).</p>
               
               <div class="space-y-3">
                   <?php if ($totalTicketsForChart === 0): ?>
