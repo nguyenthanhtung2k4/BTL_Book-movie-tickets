@@ -16,7 +16,6 @@ $flash_message = $_SESSION['flash_message'] ?? '';
 $flash_success = $_SESSION['flash_success'] ?? false;
 
 unset($_SESSION['flash_message'], $_SESSION['flash_success']);
-
 ?>
 
 

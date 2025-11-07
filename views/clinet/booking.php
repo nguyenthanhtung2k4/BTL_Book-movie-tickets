@@ -129,7 +129,6 @@ require_once __DIR__ . "/header.php";
 
 <main class="max-w-7xl mx-auto p-6 space-y-8 pb-20">
     
-    <!-- Thông tin phim -->
     <section class="bg-gray-800 rounded-xl p-6 shadow-lg">
         <div class="flex flex-col md:flex-row gap-6">
             <img src="<?= htmlspecialchars($movie['banner_url']) ?>" 
@@ -158,7 +157,6 @@ require_once __DIR__ . "/header.php";
         </section>
     <?php else: ?>
         
-        <!-- Bước 1: Chọn Ngày -->
         <section id="step-date" class="bg-gray-800 rounded-xl p-6 shadow-lg">
             <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-primary pl-4">Bước 1: Chọn Ngày Chiếu</h2>
             <div class="flex flex-wrap gap-3">
@@ -186,7 +184,6 @@ require_once __DIR__ . "/header.php";
             </div>
         </section>
 
-        <!-- Bước 2: Chọn Suất Chiếu -->
         <section id="step-showtime" class="bg-gray-800 rounded-xl p-6 shadow-lg">
             <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-primary pl-4">Bước 2: Chọn Suất Chiếu</h2>
             
@@ -216,12 +213,10 @@ require_once __DIR__ . "/header.php";
             <?php endforeach; ?>
         </section>
 
-        <!-- Bước 3: Chọn Ghế -->
         <section id="step-seat" class="bg-gray-800 rounded-xl p-6 shadow-lg hidden">
             <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-primary pl-4">Bước 3: Chọn Ghế</h2>
             
             <?php if (!$isLoggedIn): ?>
-                <!-- Thông báo yêu cầu đăng nhập -->
                 <div class="bg-yellow-600/20 border-2 border-yellow-500 rounded-lg p-6 mb-6 text-center">
                     <i data-lucide="lock" class="w-16 h-16 mx-auto mb-4 text-yellow-500"></i>
                     <h3 class="text-xl font-bold text-yellow-300 mb-2">Vui lòng đăng nhập để đặt vé</h3>
@@ -233,12 +228,9 @@ require_once __DIR__ . "/header.php";
                 </div>
             <?php endif; ?>
             
-            <!-- Thông tin suất chiếu đã chọn -->
             <div id="selected-show-info" class="bg-gray-700/50 p-4 rounded-lg mb-6 text-gray-300">
-                <!-- Sẽ được cập nhật bằng JavaScript -->
-            </div>
+                </div>
 
-            <!-- Chú thích loại ghế -->
             <div class="flex flex-wrap gap-6 mb-6 text-sm">
                 <div class="flex items-center gap-2">
                     <div class="w-6 h-6 bg-blue-500 rounded-sm"></div>
@@ -262,19 +254,15 @@ require_once __DIR__ . "/header.php";
                 </div>
             </div>
 
-            <!-- Màn hình -->
             <div class="text-center mb-8">
                 <div class="inline-block bg-gray-700 text-white px-12 py-2 rounded-t-full border-t-4 border-primary">
                     MÀN HÌNH
                 </div>
             </div>
 
-            <!-- Sơ đồ ghế -->
             <div id="seat-map" class="mb-6 <?= !$isLoggedIn ? 'opacity-50 pointer-events-none' : '' ?>">
-                <!-- Sẽ được render bằng JavaScript -->
-            </div>
+                </div>
 
-            <!-- Tóm tắt ghế đã chọn -->
             <div class="bg-gray-700/50 p-4 rounded-lg mb-6">
                 <h3 class="font-bold text-white mb-2">Ghế đã chọn:</h3>
                 <p id="summary-seats-list" class="text-gray-300 mb-3">Chưa chọn</p>
@@ -288,7 +276,6 @@ require_once __DIR__ . "/header.php";
             </button>
         </section>
 
-        <!-- Bước 4: Thanh toán -->
         <section id="step-checkout" class="bg-gray-800 rounded-xl p-6 shadow-lg hidden">
             <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-primary pl-4">Bước 4: Xác Nhận & Thanh Toán</h2>
             
@@ -330,6 +317,34 @@ require_once __DIR__ . "/header.php";
 
 </main>
 
+<div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-[100] items-center justify-center p-4">
+    <div class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 text-center relative">
+
+        <div id="payment-qr-step">
+            <h2 class="text-2xl font-bold text-white mb-4">Đang xử lý thanh toán...</h2>
+            <p class="text-gray-400 mb-6">Vui lòng quét mã QR bên dưới bằng app VNPay.</p>
+            
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ThanhToanScarletCinema" 
+                 alt="Fake QR Code"
+                 class="mx-auto rounded-lg border-8 border-white shadow-lg">
+            
+            <p class="text-yellow-400 font-semibold mt-6 animate-pulse">
+                Đang chờ xác nhận thanh toán...
+            </p>
+        </div>
+
+        <div id="payment-success-step" class="hidden">
+            <svg class="w-24 h-24 text-green-500 mx-auto mb-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h2 class="text-3xl font-bold text-green-400 mb-4">Thanh toán thành công!</h2>
+            <p class="text-gray-300 text-lg">
+                Đang hoàn tất đặt vé của bạn...
+            </p>
+        </div>
+
+    </div>
+</div>
 <script>
     // Truyền trạng thái đăng nhập từ PHP sang JavaScript
     const IS_LOGGED_IN = <?= $isLoggedIn ? 'true' : 'false' ?>;
@@ -338,6 +353,57 @@ require_once __DIR__ . "/header.php";
 <script src="../../asset/js/booking_clinet.js"></script>
 
 <script>
+    // === BẮT ĐẦU: LOGIC GIẢ LẬP THANH TOÁN (ĐÃ THÊM) ===
+    const checkoutForm = document.querySelector('form[action="../../handle/booking_process.php"]');
+    const paymentMethodSelect = document.getElementById('payment_method');
+    const paymentModal = document.getElementById('paymentModal');
+    const qrStep = document.getElementById('payment-qr-step');
+    const successStep = document.getElementById('payment-success-step');
+
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(event) {
+            
+            const selectedMethod = paymentMethodSelect.value;
+            
+            // Nếu không phải thanh toán VNPay (ví dụ: "cash", "credit_card")
+            // thì cứ để form submit bình thường, không cần giả lập
+            if (selectedMethod !== 'vnpay') {
+                return; // Cho phép submit
+            }
+            
+            // --- Nếu là VNPay, bắt đầu giả lập ---
+            
+            // 1. Ngăn form submit ngay lập tức
+            event.preventDefault(); 
+            
+            // 2. Reset modal về trạng thái ban đầu (hiện QR, ẩn success)
+            qrStep.classList.remove('hidden');
+            successStep.classList.add('hidden');
+            
+            // 3. Hiện modal lên
+            paymentModal.classList.add('flex');
+            paymentModal.classList.remove('hidden');
+            
+            // 4. Giả lập thời gian chờ quét mã (5 giây)
+            setTimeout(() => {
+                // 5. Chuyển sang màn hình "Thành công"
+                qrStep.classList.add('hidden');
+                successStep.classList.remove('hidden');
+                
+                // 6. Chờ thêm 2 giây để người dùng đọc chữ "Thành công"
+                setTimeout(() => {
+                    // 7. Gửi form đi thật sự
+                    checkoutForm.submit();
+                    
+                }, 2000); // 2 giây
+                
+            }, 5000); // 5 giây
+            
+        });
+    }
+    // === KẾT THÚC: LOGIC GIẢ LẬP THANH TOÁN ===
+
+
     // Flash message auto hide
     setTimeout(() => {
         const flash = document.getElementById('flash-message');
@@ -365,4 +431,3 @@ require_once __DIR__ . "/header.php";
 
 </body>
 </html>
-
