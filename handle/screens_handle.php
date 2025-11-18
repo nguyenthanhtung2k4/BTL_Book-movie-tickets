@@ -29,45 +29,63 @@ function handleScreens($action, $data = [], $id = null)
                         return ['success' => false, 'message' => 'Tên phòng **' . htmlspecialchars($data['name']) . '** đã tồn tại trong rạp chiếu này!'];
                   }
 
-                  // 3. TẠO SƠ ĐỒ GHẾ JSON MẶC ĐỊNH
+                  // 3. TẠO SƠ ĐỒ GHẾ MẶC ĐỊNH (Lưu vào bảng seats)
                   $initial_capacity = (int) $data['initial_capacity'];
                   $rows_per_screen = 10; // Giả định 10 ghế/hàng
                   $rows = ceil($initial_capacity / $rows_per_screen);
                   $capacity = 0;
-                  $layout_details = [];
 
-                  for ($i = 0; $i < $rows; $i++) {
-                        $row_name = chr(65 + $i);
-
-                        // Tính số ghế hàng cuối (nếu không đủ 10)
-                        $seats_in_row = ($i == $rows - 1)
-                              ? ($initial_capacity % $rows_per_screen == 0 ? $rows_per_screen : $initial_capacity % $rows_per_screen)
-                              : $rows_per_screen;
-
-                        $layout_details[] = [
-                              'row' => $row_name,
-                              'seats' => $seats_in_row,
-                              'type' => 'standard'
-                        ];
-                        $capacity += $seats_in_row;
-                  }
-
-                  $seat_layout_data = [
-                        "rows_count" => $rows,
-                        "total_capacity" => $capacity,
-                        "layout_details" => $layout_details
-                  ];
-
-                  // 4. Chuẩn bị dữ liệu cuối cùng để lưu
+                  // 4. Chuẩn bị dữ liệu để lưu screen
                   $dataToInsert = [
                         'theater_id' => $data['theater_id'],
                         'name' => $data['name'],
-                        'capacity' => $capacity,
+                        'capacity' => $initial_capacity,
                         'screen_type' => $data['screen_type'] ?? '2D',
-                        'seat_layout' => json_encode($seat_layout_data),
                   ];
 
                   if ($repo->insert($dataToInsert)) {
+                        // Lấy screen_id vừa tạo
+                        $screen_id = $repo->pdo->lastInsertId();
+                        
+                        // Tạo ghế mặc định trong bảng seats
+                        $seatRepo = new Repository('seats');
+                        $seat_number = 1;
+                        
+                        for ($i = 0; $i < $rows; $i++) {
+                              $row_letter = chr(65 + $i); // A, B, C...
+                              
+                              // Tính số ghế hàng cuối
+                              $seats_in_row = ($i == $rows - 1)
+                                    ? ($initial_capacity % $rows_per_screen == 0 ? $rows_per_screen : $initial_capacity % $rows_per_screen)
+                                    : $rows_per_screen;
+
+                        // Lấy ID của loại ghế standard
+                        $seatTypeRepo = new Repository('seat_types');
+                        $standardType = $seatTypeRepo->findBy('code', 'standard');
+                        if (!$standardType) {
+                              return ['success' => false, 'message' => 'Không tìm thấy loại ghế "standard" trong hệ thống!'];
+                        }
+                        $standardTypeId = $standardType['id'];
+                        
+                        // Tạo ghế cho hàng này
+                        for ($j = 1; $j <= $seats_in_row; $j++) {
+                              $seat_code = $row_letter . $j;
+                              $seat_data = [
+                                    'screen_id' => $screen_id,
+                                    'row_letter' => $row_letter,
+                                    'seat_number' => $j,
+                                    'seat_code' => $seat_code,
+                                    'seat_type_id' => $standardTypeId,
+                                    'position_order' => $j
+                              ];
+                              $seatRepo->insert($seat_data);
+                              $capacity++;
+                        }
+                        }
+                        
+                        // Cập nhật lại capacity chính xác
+                        $repo->update($screen_id, ['capacity' => $capacity]);
+                        
                         return ['success' => true, 'message' => "Thêm phòng chiếu **{$data['name']}** thành công!"];
                   }
                   return ['success' => false, 'message' => 'Lỗi: Không thể thêm phòng chiếu vào database.'];
@@ -101,6 +119,7 @@ function handleScreens($action, $data = [], $id = null)
                   if (!$repo->find($id))
                         return ['success' => false, 'message' => 'Phòng chiếu không tồn tại.'];
 
+                  // Xóa screen sẽ tự động xóa tất cả ghế (CASCADE)
                   if ($repo->delete($id)) {
                         return ['success' => true, 'message' => 'Xóa phòng chiếu thành công.'];
                   }
@@ -116,18 +135,66 @@ function handleScreens($action, $data = [], $id = null)
                   if (!$layout_json)
                         return ['success' => false, 'message' => 'Dữ liệu sơ đồ ghế JSON bị thiếu.'];
 
-                  // 2. Chuẩn bị dữ liệu cập nhật
-                  $dataToUpdate = [
-                        'capacity' => $new_capacity, // Cập nhật lại sức chứa
-                        'seat_layout' => $layout_json,
-                        'updated_at' => date('Y-m-d H:i:s'),
-                  ];
-
-                  // 3. Thực hiện cập nhật
-                  if ($repo->update($id, $dataToUpdate)) {
-                        return ['success' => true, 'message' => 'Cập nhật sơ đồ ghế thành công!'];
+                  // 2. Parse JSON layout
+                  $layout_data = json_decode($layout_json, true);
+                  if (!$layout_data || !isset($layout_data['layout_details'])) {
+                        return ['success' => false, 'message' => 'Dữ liệu JSON không hợp lệ.'];
                   }
-                  return ['success' => false, 'message' => 'Lỗi khi lưu sơ đồ ghế vào database.'];
+
+                  // 3. Xóa tất cả ghế cũ
+                  $seatRepo = new Repository('seats');
+                  $oldSeats = $seatRepo->findAllBy('screen_id', $id);
+                  foreach ($oldSeats as $oldSeat) {
+                        $seatRepo->delete($oldSeat['id']);
+                  }
+
+                  // 4. Lấy mapping seat_type code -> id
+                  $seatTypeRepo = new Repository('seat_types');
+                  $allSeatTypes = $seatTypeRepo->getAll();
+                  $seatTypeMap = [];
+                  foreach ($allSeatTypes as $st) {
+                        $seatTypeMap[$st['code']] = $st['id'];
+                  }
+
+                  // 5. Tạo ghế mới từ layout
+                  $seatRepo = new Repository('seats');
+                  foreach ($layout_data['layout_details'] as $row) {
+                        $row_letter = $row['row'];
+                        if (!isset($row['seat_data']) || !is_array($row['seat_data'])) {
+                              continue;
+                        }
+                        
+                        $position = 1;
+                        foreach ($row['seat_data'] as $index => $seat_type_code) {
+                              // Bỏ qua lối đi (aisle)
+                              if ($seat_type_code === 'aisle') {
+                                    continue;
+                              }
+                              
+                              // Lấy seat_type_id từ code
+                              $seat_type_id = $seatTypeMap[$seat_type_code] ?? $seatTypeMap['standard'];
+                              
+                              $seat_number = $index + 1;
+                              $seat_code = $row_letter . $seat_number;
+                              
+                              $seat_data = [
+                                    'screen_id' => $id,
+                                    'row_letter' => $row_letter,
+                                    'seat_number' => $seat_number,
+                                    'seat_code' => $seat_code,
+                                    'seat_type_id' => $seat_type_id,
+                                    'position_order' => $position
+                              ];
+                              
+                              $seatRepo->insert($seat_data);
+                              $position++;
+                        }
+                  }
+
+                  // 5. Cập nhật capacity
+                  $repo->update($id, ['capacity' => $new_capacity]);
+
+                  return ['success' => true, 'message' => 'Cập nhật sơ đồ ghế thành công!'];
 
             default:
                   return ['success' => false, 'message' => 'Hành động không hợp lệ.'];

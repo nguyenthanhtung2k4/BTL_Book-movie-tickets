@@ -10,7 +10,15 @@ require_once __DIR__ . "/../../function/reponsitory.php";
 require_once __DIR__ . "/side_bar.php";
 
 $repo = new Repository('theaters');
-$theaters = $repo->getAllTimeDESC(); // Lấy tất cả rạp
+// Phân trang: 10 rạp mỗi trang, sắp xếp mới nhất theo id
+$itemsPerPage = 10;
+$currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$offset = ($currentPage - 1) * $itemsPerPage;
+
+$totalTheaters = $repo->countAll();
+$totalPages = ceil($totalTheaters / $itemsPerPage);
+
+$theaters = $repo->getLimitAndOffset($itemsPerPage, $offset, 'id', 'DESC');
 
 $flash_message = $_SESSION['flash_message'] ?? '';
 $flash_success = $_SESSION['flash_success'] ?? false;
@@ -59,6 +67,22 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
             <?= $flash_success ? 'bg-green-600 border border-green-400' : 'bg-red-700 border border-red-400' ?>">
             <?= ($flash_message) ?>
         </div>
+
+        <?php if ($totalPages > 1): ?>
+        <div class="flex justify-center mt-6 space-x-2 text-white">
+            <a href="?page=<?= max(1, $currentPage - 1) ?>" class="px-4 py-2 rounded-lg <?= $currentPage == 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' ?>">
+                &laquo; Trước
+            </a>
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <a href="?page=<?= $i ?>" class="px-4 py-2 rounded-lg <?= $i == $currentPage ? 'bg-red-700 font-bold' : 'bg-gray-700 hover:bg-gray-600' ?>">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
+            <a href="?page=<?= min($totalPages, $currentPage + 1) ?>" class="px-4 py-2 rounded-lg <?= $currentPage == $totalPages ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' ?>">
+                Sau &raquo;
+            </a>
+        </div>
+        <?php endif; ?>
     <?php endif; ?>
 
     <?php if (!empty($theaters)): ?>

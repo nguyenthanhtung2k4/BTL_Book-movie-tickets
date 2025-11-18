@@ -99,9 +99,30 @@ function toggleSeatSelection(event) {
 
 
 /**
- * Vẽ sơ đồ ghế dựa trên layout JSON
+ * Lấy danh sách ghế từ API
  */
-function renderSeatMap(layoutData, bookedSeats) {
+async function fetchSeatsByScreen(screenId) {
+    try {
+        const response = await fetch(`../../handle/get_seats_by_screen.php?screen_id=${screenId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const seats = await response.json();
+        if (!Array.isArray(seats)) {
+            console.error('[AJAX Error] Dữ liệu trả về không phải là một mảng JSON.');
+            return [];
+        }
+        return seats;
+    } catch (error) {
+        console.error('[AJAX FAILED] Lỗi khi gọi API lấy ghế:', error);
+        return [];
+    }
+}
+
+/**
+ * Vẽ sơ đồ ghế dựa trên dữ liệu từ bảng seats
+ */
+async function renderSeatMap(seatsData, bookedSeats) {
     const seatMapDiv = document.getElementById('seat-map');
     seatMapDiv.innerHTML = ''; 
     
@@ -109,92 +130,121 @@ function renderSeatMap(layoutData, bookedSeats) {
     selectedSeats = []; 
     currentBookedSeats = bookedSeats; 
 
-    // 1. Tìm số cột lớn nhất
-    let maxCols = 0;
-    if (layoutData && layoutData.layout_details) {
-        layoutData.layout_details.forEach(detail => {
-            if (detail.seat_data && detail.seat_data.length > maxCols) {
-                maxCols = detail.seat_data.length;
-            }
-        });
+    if (!seatsData || seatsData.length === 0) {
+        seatMapDiv.innerHTML = '<p class="text-gray-400 italic py-10">Phòng chiếu chưa được cấu hình sơ đồ ghế.</p>';
+        return;
     }
 
+    // Nhóm ghế theo hàng
+    const seatsByRow = {};
+    seatsData.forEach(seat => {
+        if (!seatsByRow[seat.row_letter]) {
+            seatsByRow[seat.row_letter] = [];
+        }
+        seatsByRow[seat.row_letter].push(seat);
+    });
+
+    // Sắp xếp hàng theo thứ tự A, B, C...
+    const sortedRows = Object.keys(seatsByRow).sort();
+    
+    // Tìm số cột lớn nhất
+    let maxCols = 0;
+    sortedRows.forEach(row => {
+        if (seatsByRow[row].length > maxCols) {
+            maxCols = seatsByRow[row].length;
+        }
+    });
 
     if (maxCols === 0) {
-         seatMapDiv.innerHTML = '<p class="text-gray-400 italic py-10">Phòng chiếu chưa được cấu hình sơ đồ ghế.</p>';
-         return;
+        seatMapDiv.innerHTML = '<p class="text-gray-400 italic py-10">Phòng chiếu chưa có ghế nào.</p>';
+        return;
     }
     
-    // 2. Thiết lập CSS Grid
-    // 30px cho Row Label + repeat(số cột ghế, 30px) cho các ô ghế
+    // Thiết lập CSS Grid
     seatMapDiv.style.gridTemplateColumns = `30px repeat(${maxCols}, 30px)`;
     seatMapDiv.style.display = 'grid';
     seatMapDiv.style.gap = '6px';
     seatMapDiv.style.width = 'fit-content';
     seatMapDiv.style.margin = '0 auto';
 
-    layoutData.layout_details.forEach(rowInfo => {
+    // Render từng hàng
+    sortedRows.forEach(rowLetter => {
+        const rowSeats = seatsByRow[rowLetter].sort((a, b) => a.seat_number - b.seat_number);
         
         // Nhãn hàng (Row Label)
         const rowLabel = document.createElement('div');
         rowLabel.className = 'seat-row-label font-bold text-gray-400 text-center text-sm h-6 leading-6';
-        rowLabel.textContent = rowInfo.row;
-        seatMapDiv.appendChild(rowLabel); 
+        rowLabel.textContent = rowLetter;
+        seatMapDiv.appendChild(rowLabel);
 
-        // Duyệt qua từng ô trong mảng seat_data
-        rowInfo.seat_data.forEach((seatType, index) => {
+        // Render ghế trong hàng
+        let colIndex = 0;
+        rowSeats.forEach(seat => {
             const seatWrapper = document.createElement('div');
-            const seatNumber = index + 1;
-            const seatName = rowInfo.row + seatNumber;
-            const isBooked = bookedSeats.includes(seatName);
-            const isAisle = seatType === 'aisle';
+            seatWrapper.className = 'flex items-center justify-center h-6';
             
-            // Wrapper cho từng ô trong Grid
-            seatWrapper.className = 'flex items-center justify-center h-6'; 
-
-            if (isAisle) {
-                // Lối đi
-                seatWrapper.className += ' bg-gray-900 opacity-50'; 
-                seatWrapper.title = 'Lối đi';
-                // Tạo một div trống để chiếm chỗ trong grid
-                const aisleSpacer = document.createElement('div');
-                aisleSpacer.className = 'w-full h-full';
-                seatWrapper.appendChild(aisleSpacer);
-                seatMapDiv.appendChild(seatWrapper);
-            } else {
-                // Ghế thật
-                const typeInfo = SEAT_TYPES[seatType];
-                const seatElement = document.createElement('div');
-                const typeClass = typeInfo?.color || 'bg-gray-400';
-                const seatPrice = calculateSeatPrice(seatType, basePrice);
-
-                seatElement.dataset.seatName = seatName;
-                seatElement.dataset.seatType = seatType;
-                seatElement.dataset.price = seatPrice;
-                seatElement.title = `${seatName} - ${typeInfo?.name || 'Không rõ'} (${formatCurrency(seatPrice)})`;
-
-                let classes = 'w-6 h-6 rounded-sm flex items-center justify-center text-xs font-bold transition duration-150';
-
-                if (isBooked) {
-                    // Ghế đã bán
-                    classes += ' bg-gray-500 text-gray-200 cursor-not-allowed';
-                    seatElement.style.pointerEvents = 'none';
-                    seatElement.title = `${seatName} - Đã bán`;
-                } else {
-                    // Ghế có thể chọn
-                    classes += ` ${typeClass} text-black cursor-pointer hover:ring-2 hover:ring-white`;
-                    seatElement.classList.add('available-seat');
-                    seatElement.addEventListener('click', toggleSeatSelection);
-                }
-                
-                seatElement.className = classes;
-                seatElement.textContent = seatNumber;
-                
-                seatWrapper.appendChild(seatElement);
-                seatMapDiv.appendChild(seatWrapper);
+            const isBooked = bookedSeats.includes(seat.seat_code);
+            // Sử dụng dữ liệu từ API (đã có seat_type_code, price_modifier, color_code)
+            const seatTypeCode = seat.seat_type_code || 'standard';
+            const typeInfo = SEAT_TYPES[seatTypeCode] || SEAT_TYPES['standard'];
+            const seatElement = document.createElement('div');
+            
+            // Tính giá từ price_modifier
+            const seatPrice = basePrice * (seat.price_modifier || 1.0);
+            
+            // Sử dụng màu từ API hoặc fallback (dùng style inline vì Tailwind không hỗ trợ dynamic color)
+            let typeClass = typeInfo?.color || 'bg-gray-400';
+            if (seat.color_code) {
+                // Dùng inline style cho màu động
+                seatElement.style.backgroundColor = seat.color_code;
             }
+
+            seatElement.dataset.seatName = seat.seat_code;
+            seatElement.dataset.seatType = seatTypeCode;
+            seatElement.dataset.price = seatPrice;
+            seatElement.title = `${seat.seat_code} - ${seat.seat_type_name || typeInfo?.name || 'Không rõ'} (${formatCurrency(seatPrice)})`;
+            
+            // Nếu không thể đặt, đánh dấu
+            if (!seat.is_bookable) {
+                seatElement.style.pointerEvents = 'none';
+                seatElement.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            let classes = 'w-6 h-6 rounded-sm flex items-center justify-center text-xs font-bold transition duration-150';
+
+            if (isBooked) {
+                // Ghế đã bán
+                classes += ' bg-gray-500 text-gray-200 cursor-not-allowed';
+                seatElement.style.pointerEvents = 'none';
+                seatElement.style.backgroundColor = '#6b7280'; // Override màu nếu đã bán
+                seatElement.title = `${seat.seat_code} - Đã bán`;
+            } else {
+                // Ghế có thể chọn
+                if (!seat.color_code) {
+                    classes += ` ${typeClass}`;
+                }
+                classes += ' text-black cursor-pointer hover:ring-2 hover:ring-white';
+                seatElement.classList.add('available-seat');
+                seatElement.addEventListener('click', toggleSeatSelection);
+            }
+            
+            seatElement.className = classes;
+            seatElement.textContent = seat.seat_number;
+            
+            seatWrapper.appendChild(seatElement);
+            seatMapDiv.appendChild(seatWrapper);
+            colIndex++;
         });
+
+        // Thêm các ô trống nếu hàng không đủ maxCols
+        while (colIndex < maxCols) {
+            const emptyWrapper = document.createElement('div');
+            emptyWrapper.className = 'flex items-center justify-center h-6';
+            seatMapDiv.appendChild(emptyWrapper);
+            colIndex++;
+        }
     });
+    
     updateSummary();
 }
 
@@ -255,8 +305,8 @@ document.querySelectorAll('.showtime-btn').forEach(button => {
 
         // Lấy dữ liệu
         selectedShowId = this.dataset.showId;
+        const screenId = this.dataset.screenId;
         basePrice = parseFloat(this.dataset.price);
-        const layoutJson = this.dataset.layout;
         
         // Lấy thông tin hiển thị
         const theaterName = this.closest('.theater-block').querySelector('h3').textContent;
@@ -281,16 +331,17 @@ document.querySelectorAll('.showtime-btn').forEach(button => {
         window.scrollTo({ top: document.getElementById('step-seat').offsetTop, behavior: 'smooth' });
 
         try {
-            currentSeatLayout = JSON.parse(layoutJson);
+            // Lấy danh sách ghế từ API
+            const seatsData = await fetchSeatsByScreen(screenId);
             
             // Lấy danh sách ghế đã bán
             const bookedSeats = await fetchBookedSeats(selectedShowId);
             
             // Vẽ sơ đồ ghế
-            renderSeatMap(currentSeatLayout, bookedSeats);
+            await renderSeatMap(seatsData, bookedSeats);
             
         } catch (error) {
-            console.error('Lỗi khi phân tích hoặc tải sơ đồ ghế:', error);
+            console.error('Lỗi khi tải sơ đồ ghế:', error);
             document.getElementById('seat-map').innerHTML = '<p class="text-red-400 italic py-10">Lỗi: Không thể tải sơ đồ ghế. (Vui lòng kiểm tra Console)</p>';
         }
     });

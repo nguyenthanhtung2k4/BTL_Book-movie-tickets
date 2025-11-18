@@ -11,7 +11,9 @@ require_once __DIR__ . "/../../function/reponsitory.php";
 require_once __DIR__ . "/side_bar.php"; // Giả định side_bar.php chứa phần mở đầu HTML (<body>)
 
 $screenRepo = new Repository('screens');
-$theaterRepo = new Repository('theaters'); 
+$theaterRepo = new Repository('theaters');
+$seatRepo = new Repository('seats');
+$seatTypeRepo = new Repository('seat_types');
 
 $screen_id = $_GET['id'] ?? null;
 
@@ -23,16 +25,52 @@ if (!$screen_id || !($screen = $screenRepo->find($screen_id))) {
 }
 
 $theater_name = $theaterRepo->find($screen['theater_id'])['name'] ?? 'Rạp không xác định';
-$initial_layout = json_decode($screen['seat_layout'], true);
 
-// Xử lý lỗi JSON (nếu chuỗi JSON không hợp lệ, tạo cấu trúc rỗng/mặc định)
-if ($initial_layout === null && json_last_error() !== JSON_ERROR_NONE) {
-    $initial_layout = [
-        "rows_count" => 0, 
-        "total_capacity" => 0, 
-        "layout_details" => []
-    ];
+// Lấy tất cả ghế của phòng chiếu này
+$seats = $seatRepo->getByCondition(
+    "screen_id = :screen_id",
+    ['screen_id' => $screen_id],
+    "*",
+    "row_letter ASC, seat_number ASC"
+);
+$seatTypes = $seatTypeRepo->getAll();
+$seatTypeCodeMap = [];
+foreach ($seatTypes as $st) {
+    $seatTypeCodeMap[$st['id']] = $st['code'];
 }
+
+// Chuyển đổi dữ liệu ghế thành layout_details
+$layout_details = [];
+if ($seats) {
+    // Gom nhóm theo row_letter
+    $rows = [];
+    foreach ($seats as $seat) {
+        $row = $seat['row_letter'];
+        if (!isset($rows[$row])) {
+            $rows[$row] = [];
+        }
+        $rows[$row][$seat['position_order'] - 1] = $seatTypeCodeMap[$seat['seat_type_id']] ?? 'standard';
+    }
+    // Sắp xếp theo row (A, B, C...)
+    ksort($rows);
+    foreach ($rows as $row_letter => $seat_data) {
+        // Sắp xếp theo vị trí và re-index để JSON là mảng (không phải object)
+        ksort($seat_data);
+        $normalized = array_values($seat_data);
+
+        $layout_details[] = [
+            'row' => $row_letter,
+            'seats' => count($normalized),
+            'seat_data' => $normalized
+        ];
+    }
+}
+
+$initial_layout = [
+    "rows_count" => count($layout_details),
+    "total_capacity" => $screen['capacity'],
+    "layout_details" => $layout_details
+];
 
 $handleURL = "../../handle/screens_handle.php";
 ?>
@@ -69,7 +107,7 @@ $handleURL = "../../handle/screens_handle.php";
     }
     /* Màu ghế */
     .seat.standard { background-color: #3b82f6; border-color: #1e40af; } 
-    .seat#vip { background-color: #f59e0b; border-color: #92400e; color: #f59e0b;;}      
+    .seat.vip { background-color: #f59e0b; border-color: #92400e; color: #fff; }      
     .seat.disabled { background-color: #10b981; border-color: #065f46; } 
     
     .seat:hover { transform: scale(1.1); box-shadow: 0 0 8px rgba(255, 255, 255, 0.3); }

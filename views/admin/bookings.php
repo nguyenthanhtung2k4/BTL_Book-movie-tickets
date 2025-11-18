@@ -15,7 +15,7 @@ require_once __DIR__ . "/side_bar.php";
 $bookingRepo = new Repository('bookings');
 $userRepo = new Repository('users');
 
-$itemsPerPage = 20;
+$itemsPerPage = 10;
 $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($currentPage - 1) * $itemsPerPage;
 

@@ -69,10 +69,10 @@ foreach ($shows as $show) {
         'show_id' => $show['id'],
         'show_time' => $showTime,
         'screen_name' => $screen['name'],
+        'screen_id' => $screen['id'],
         'screen_type' => $screen['screen_type'],
         'format' => $show['format'],
-        'price' => $show['price'],
-        'seat_layout' => $screen['seat_layout']
+        'price' => $show['price']
     ];
 }
 
@@ -198,9 +198,9 @@ require_once __DIR__ . "/header.php";
                             <?php foreach ($theaterShows as $show): ?>
                                 <button class="showtime-btn px-6 py-3 rounded-lg font-semibold transition duration-200 bg-gray-700 text-white hover:bg-red-500 hover:scale-105"
                                         data-show-id="<?= $show['show_id'] ?>"
+                                        data-screen-id="<?= $show['screen_id'] ?>"
                                         data-date="<?= $date ?>"
                                         data-price="<?= $show['price'] ?>"
-                                        data-layout='<?= htmlspecialchars($show['seat_layout'], ENT_QUOTES) ?>'
                                         title="Phòng: <?= htmlspecialchars($show['screen_name']) ?> | Định dạng: <?= htmlspecialchars($show['format']) ?>"
                                         style="display: none;">
                                     <div class="text-lg font-bold"><?= $show['show_time'] ?></div>
@@ -294,9 +294,10 @@ require_once __DIR__ . "/header.php";
                     <select name="payment_method" id="payment_method" required
                             class="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-primary focus:outline-none">
                         <option value="">-- Chọn phương thức --</option>
-                        <option value="cash">Tiền mặt tại quầy</option>
-                        <option value="credit_card">Thẻ tín dụng</option>
+                        <!-- <option value="cash">Tiền mặt tại quầy</option>
+                        <option value="credit_card">Thẻ tín dụng</option> -->
                         <option value="vnpay">VNPay</option>
+                        <option value="vnpay">MOMO</option>
                     </select>
                 </div>
 

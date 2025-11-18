@@ -7,7 +7,15 @@ require_once __DIR__ . "/../../function/reponsitory.php";
 require_once __DIR__ . "/side_bar.php";
 
 $userRepo = new Repository('users');
-$users = $userRepo->getAllTimeDESC();
+// Phân trang: 10 người dùng mỗi trang, sắp xếp mới nhất theo id
+$itemsPerPage = 10;
+$currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$offset = ($currentPage - 1) * $itemsPerPage;
+
+$totalUsers = $userRepo->countAll();
+$totalPages = ceil($totalUsers / $itemsPerPage);
+
+$users = $userRepo->getLimitAndOffset($itemsPerPage, $offset, 'id', 'DESC');
 if (session_status() === PHP_SESSION_NONE)
     session_start();
 // Khởi tạo các biến
@@ -83,6 +91,21 @@ if (isset($_SESSION['flash_message'])) {
       </tbody>
     </table>
   </div>
+  <?php if ($totalPages > 1): ?>
+  <div class="flex justify-center mt-6 space-x-2 text-white">
+      <a href="?page=<?= max(1, $currentPage - 1) ?>" class="px-4 py-2 rounded-lg <?= $currentPage == 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' ?>">
+          &laquo; Trước
+      </a>
+      <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+          <a href="?page=<?= $i ?>" class="px-4 py-2 rounded-lg <?= $i == $currentPage ? 'bg-red-700 font-bold' : 'bg-gray-700 hover:bg-gray-600' ?>">
+              <?= $i ?>
+          </a>
+      <?php endfor; ?>
+      <a href="?page=<?= min($totalPages, $currentPage + 1) ?>" class="px-4 py-2 rounded-lg <?= $currentPage == $totalPages ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' ?>">
+          Sau &raquo;
+      </a>
+  </div>
+  <?php endif; ?>
 </main>
 <script>
     setTimeout(() => {

@@ -253,8 +253,9 @@ unset($_SESSION['flash_message'], $_SESSION['flash_success']);
     }, 3000); // Tăng thời gian hiển thị lên 3 giây
 </script>
 
+<?php // Chèn footer đúng vị trí và không echo giá trị trả về
+require_once __DIR__ . '/footer.php'; ?>
+
 </body>
 
 </html>
-
-<?= require_once __DIR__ . '../footer.php';

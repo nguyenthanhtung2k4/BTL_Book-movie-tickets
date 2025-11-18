@@ -85,11 +85,6 @@ try {
         throw new Exception('Phòng chiếu không tồn tại!');
     }
     
-    $seat_layout = json_decode($screen['seat_layout'], true);
-    if (!$seat_layout || !isset($seat_layout['layout_details'])) {
-        throw new Exception('Sơ đồ ghế không hợp lệ!');
-    }
-    
     // 2. Kiểm tra ghế đã được đặt chưa (Race condition prevention)
     foreach ($selected_seats as $seat_code) {
         $existing = $bookingItemRepo->findByMultipleFields([
@@ -117,41 +112,35 @@ try {
     // Lấy booking_id vừa tạo
     $booking_id = $bookingRepo->pdo->lastInsertId();
     
-    // 4. Tính giá cho từng ghế và tạo booking_items
+    // 4. Lấy thông tin ghế từ bảng seats và tạo booking_items
+    $seatRepo = new Repository('seats');
+    $seatTypeRepo = new Repository('seat_types');
+    
     foreach ($selected_seats as $seat_code) {
-        // Phân tích seat_code (ví dụ: "A5" -> row: A, seat: 5)
-        preg_match('/^([A-Z]+)(\d+)$/', $seat_code, $matches);
-        if (count($matches) !== 3) {
-            throw new Exception("Mã ghế không hợp lệ: {$seat_code}");
+        // Tìm ghế trong bảng seats
+        $seat = $seatRepo->findByMultipleFields([
+            'screen_id' => $screen['id'],
+            'seat_code' => $seat_code
+        ]);
+        
+        if (!$seat) {
+            throw new Exception("Ghế {$seat_code} không tồn tại trong phòng chiếu!");
         }
         
-        $row_letter = $matches[1];
-        $seat_number = intval($matches[2]);
-        
-        // Tìm loại ghế trong layout
-        $seat_type = 'standard'; // Mặc định
-        foreach ($seat_layout['layout_details'] as $row) {
-            if ($row['row'] === $row_letter) {
-                $seat_index = $seat_number - 1;
-                if (isset($row['seat_data'][$seat_index])) {
-                    $seat_type = $row['seat_data'][$seat_index];
-                }
-                break;
-            }
+        // Lấy thông tin loại ghế từ bảng seat_types
+        $seatType = $seatTypeRepo->find($seat['seat_type_id']);
+        if (!$seatType) {
+            throw new Exception("Loại ghế không tồn tại cho ghế {$seat_code}!");
         }
         
-        // Tính giá ghế dựa trên loại
-        $seat_price = $base_price;
-        switch ($seat_type) {
-            case 'vip':
-                $seat_price *= 1.5;
-                break;
-            case 'disabled':
-                $seat_price *= 0.8;
-                break;
-            case 'aisle':
-                throw new Exception("Không thể đặt lối đi: {$seat_code}");
+        // Kiểm tra không cho đặt lối đi
+        if (!$seatType['is_bookable'] || $seatType['code'] === 'aisle') {
+            throw new Exception("Không thể đặt loại ghế này: {$seat_code} ({$seatType['name_vi']})");
         }
+        
+        // Tính giá ghế dựa trên price_modifier từ bảng seat_types
+        $price_modifier = floatval($seatType['price_modifier']);
+        $seat_price = $base_price * $price_modifier;
         
         // Tạo booking_item
         $item_data = [
@@ -166,8 +155,8 @@ try {
         $bookingItemRepo->insert($item_data);
     }
     
-    // 5. Thành công - Redirect về trang xác nhận hoặc profile (ĐÃ CẬP NHẬT THÔNG BÁO)
-    $_SESSION['flash_message'] = $flash_message; // <-- Đã sửa
+    // 5. Thành công - Redirect về trang xác nhận hoặc profile
+    $_SESSION['flash_message'] = 'Đặt vé thành công! Vui lòng thanh toán tại quầy.';
     $_SESSION['flash_success'] = true;
     
     // Redirect về trang profile hoặc booking confirmation
