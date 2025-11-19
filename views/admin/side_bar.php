@@ -56,9 +56,14 @@ $userRole = $_SESSION['user']['role'] ?? 'admin';
       </div>
 
       <nav class="flex-1 space-y-2">
+         <a href="<?= $baseUrl?>/search.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+          <i data-lucide="search" class="inline w-4 h-4 mr-2"></i>Tìm kiếm
+        </a>
+        
         <a href="<?= $baseUrl?>/index.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="layout-dashboard" class="inline w-4 h-4 mr-2"></i>Dashboard
         </a>
+        
         <a href="<?= $baseUrl?>/users.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="users" class="inline w-4 h-4 mr-2"></i>Quản lý người dùng
         </a>
@@ -77,6 +82,7 @@ $userRole = $_SESSION['user']['role'] ?? 'admin';
         <a href="<?= $baseUrl?>/bookings.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="ticket" class="inline w-4 h-4 mr-2"></i>Quản lý đơn đặt vé
         </a>
+       
       </nav>
 
       <!-- User Info & Actions -->

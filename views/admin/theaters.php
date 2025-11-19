@@ -11,7 +11,7 @@ require_once __DIR__ . "/side_bar.php";
 
 $repo = new Repository('theaters');
 // Phân trang: 10 rạp mỗi trang, sắp xếp mới nhất theo id
-$itemsPerPage = 10;
+$itemsPerPage = 15;
 $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($currentPage - 1) * $itemsPerPage;
 

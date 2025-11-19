@@ -269,6 +269,52 @@ INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price
 UNLOCK TABLES;
 
 -- ============================================
+-- THÊM DỮ LIỆU MẪU: Đơn hàng đã thanh toán cho 4 tháng gần đây
+-- Mục đích: Tăng dữ liệu cho biểu đồ "đơn hàng đã thanh toán theo tháng"
+-- Ghi chú: Các đơn hàng này cùng tham chiếu show_id = 1
+-- ============================================
+
+LOCK TABLES `bookings` WRITE;
+INSERT INTO `bookings` (
+  `user_id`, `show_id`, `status`, `total_amount`, `payment_method`, `payment_status`, `created_at`, `updated_at`
+) VALUES
+-- Tháng 7 (4 tháng trước kể từ 2025-11)
+(1, 1, 'confirmed', 200000, 'card', 'paid', '2025-07-18 19:30:00', '2025-07-18 19:30:00'),
+-- Tháng 8
+(1, 1, 'confirmed', 300000, 'cash', 'paid', '2025-08-10 18:15:00', '2025-08-10 18:15:00'),
+-- Tháng 9
+(1, 1, 'confirmed', 250000, 'card', 'paid', '2025-09-12 20:05:00', '2025-09-12 20:05:00'),
+-- Tháng 10
+(1, 1, 'confirmed', 150000, 'cash', 'paid', '2025-10-15 15:45:00', '2025-10-15 15:45:00');
+UNLOCK TABLES;
+
+-- Nếu muốn hiển thị thêm tổng vé đã bán, có thể thêm booking_items tương ứng
+-- (lưu ý ràng buộc UNIQUE (show_id, seat_code) nên mỗi ghế chỉ xuất hiện một lần trên một show)
+-- Ví dụ: phân bổ các ghế còn lại cho các đơn đã thanh toán
+LOCK TABLES `booking_items` WRITE;
+-- Gắn vé cho các đơn "paid" bằng cách tham chiếu theo thời gian tạo (mỗi lệnh INSERT 1 dòng)
+INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price`, `ticket_type`, `status`)
+SELECT b.id, 1, 'A3', 100000.00, 'adult', 'booked' FROM bookings b WHERE b.created_at = '2025-07-18 19:30:00' LIMIT 1;
+INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price`, `ticket_type`, `status`)
+SELECT b.id, 1, 'A4', 100000.00, 'adult', 'booked' FROM bookings b WHERE b.created_at = '2025-07-18 19:30:00' LIMIT 1;
+
+INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price`, `ticket_type`, `status`)
+SELECT b.id, 1, 'A5', 100000.00, 'adult', 'booked' FROM bookings b WHERE b.created_at = '2025-08-10 18:15:00' LIMIT 1;
+INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price`, `ticket_type`, `status`)
+SELECT b.id, 1, 'A6', 100000.00, 'adult', 'booked' FROM bookings b WHERE b.created_at = '2025-08-10 18:15:00' LIMIT 1;
+
+INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price`, `ticket_type`, `status`)
+SELECT b.id, 1, 'A7', 100000.00, 'adult', 'booked' FROM bookings b WHERE b.created_at = '2025-09-12 20:05:00' LIMIT 1;
+INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price`, `ticket_type`, `status`)
+SELECT b.id, 1, 'A8', 100000.00, 'adult', 'booked' FROM bookings b WHERE b.created_at = '2025-09-12 20:05:00' LIMIT 1;
+
+INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price`, `ticket_type`, `status`)
+SELECT b.id, 1, 'A9', 100000.00, 'adult', 'booked' FROM bookings b WHERE b.created_at = '2025-10-15 15:45:00' LIMIT 1;
+INSERT INTO `booking_items` (`booking_id`, `show_id`, `seat_code`, `ticket_price`, `ticket_type`, `status`)
+SELECT b.id, 1, 'A10', 100000.00, 'adult', 'booked' FROM bookings b WHERE b.created_at = '2025-10-15 15:45:00' LIMIT 1;
+UNLOCK TABLES;
+
+-- ============================================
 -- HOÀN TẤT
 -- ============================================
 

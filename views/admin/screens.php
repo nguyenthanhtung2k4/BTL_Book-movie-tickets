@@ -15,8 +15,8 @@ require_once __DIR__ . "/side_bar.php"; // Giả định side_bar.php chứa ph�
 $screenRepo = new Repository('screens');
 $theaterRepo = new Repository('theaters'); // Cần để tra cứu tên rạp
 
-// Phân trang: 10 phòng chiếu mỗi trang, sắp xếp mới nhất theo id
-$itemsPerPage = 10;
+// Phân trang: 15 phòng chiếu mỗi trang, sắp xếp mới nhất theo id
+$itemsPerPage = 15; 
 $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($currentPage - 1) * $itemsPerPage;
 

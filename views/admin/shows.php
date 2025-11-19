@@ -15,8 +15,8 @@ $showRepo = new Repository('shows');
 $movieRepo = new Repository('movies');
 $screenRepo = new Repository('screens');
 
-// Phân trang: 10 suất chiếu mỗi trang, sắp xếp mới nhất theo id
-$itemsPerPage = 10;
+// Phân trang: 15 suất chiếu mỗi trang, sắp xếp mới nhất theo id
+$itemsPerPage = 15; 
 $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($currentPage - 1) * $itemsPerPage;
 
