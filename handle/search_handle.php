@@ -1,5 +1,4 @@
 <?php
-// Search Handle: cung cấp hàm tìm kiếm đa bảng dùng Repository::runRawQuery
 require_once __DIR__ . '/../function/reponsitory.php';
 
 /**
