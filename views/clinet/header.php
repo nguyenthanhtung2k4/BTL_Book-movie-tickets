@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($siteTitle ?? 'SCARLET CINEMA') ?></title>
-
+  <link rel="icon" type="image/png" href="https://play-lh.googleusercontent.com/B4MFfnsL5GACYUuXZb2gG0JKc7IlYnVb5ulQsLkUbTNntF0cfJYOwVQs7RhaRZlNB3x9">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">

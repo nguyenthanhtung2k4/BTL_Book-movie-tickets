@@ -1,7 +1,7 @@
 <?php
 // Khởi động session nếu chưa có
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+  session_start();
 }
 
 // Load auth helper
@@ -9,17 +9,17 @@ require_once __DIR__ . "/../../function/auth_helper.php";
 
 // Kiểm tra quyền admin - bắt buộc phải đăng nhập và là admin
 if (!isLoggedIn()) {
-    $_SESSION['flash_message'] = 'Vui lòng đăng nhập để tiếp tục!';
-    $_SESSION['flash_success'] = false;
-    header('Location: ../clinet/account.php?view=login');
-    exit;
+  $_SESSION['flash_message'] = 'Vui lòng đăng nhập để tiếp tục!';
+  $_SESSION['flash_success'] = false;
+  header('Location: ../clinet/account.php?view=login');
+  exit;
 }
 
 if (!isAdmin()) {
-    $_SESSION['flash_message'] = 'Bạn không có quyền truy cập trang admin!';
-    $_SESSION['flash_success'] = false;
-    header('Location: ../clinet/index.php');
-    exit;
+  $_SESSION['flash_message'] = 'Bạn không có quyền truy cập trang admin!';
+  $_SESSION['flash_success'] = false;
+  header('Location: ../clinet/index.php');
+  exit;
 }
 
 $baseUrl = "/BTL_Book_movie_tickets/views/admin";
@@ -31,18 +31,34 @@ $userRole = $_SESSION['user']['role'] ?? 'admin';
 ?>
 <!DOCTYPE html>
 <html lang="vi" class="dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= $title ?? 'Admin Panel' ?> | SCARLET CINEMA</title>
+  <link rel="icon" type="image/png"
+    href="https://play-lh.googleusercontent.com/B4MFfnsL5GACYUuXZb2gG0JKc7IlYnVb5ulQsLkUbTNntF0cfJYOwVQs7RhaRZlNB3x9">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .sidebar { background-color: #1f2937; }
-    .nav-link { transition: all 0.2s ease; }
-    .nav-link:hover { background-color: #374151; transform: translateX(4px); }
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .sidebar {
+      background-color: #1f2937;
+    }
+
+    .nav-link {
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background-color: #374151;
+      transform: translateX(4px);
+    }
   </style>
 </head>
 
@@ -56,33 +72,41 @@ $userRole = $_SESSION['user']['role'] ?? 'admin';
       </div>
 
       <nav class="flex-1 space-y-2">
-         <a href="<?= $baseUrl?>/search.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+        <a href="<?= $baseUrl ?>/search.php"
+          class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="search" class="inline w-4 h-4 mr-2"></i>Tìm kiếm
         </a>
-        
-        <a href="<?= $baseUrl?>/index.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+
+        <a href="<?= $baseUrl ?>/index.php"
+          class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="layout-dashboard" class="inline w-4 h-4 mr-2"></i>Dashboard
         </a>
-        
-        <a href="<?= $baseUrl?>/users.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+
+        <a href="<?= $baseUrl ?>/users.php"
+          class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="users" class="inline w-4 h-4 mr-2"></i>Quản lý người dùng
         </a>
-        <a href="<?= $baseUrl?>/movies.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+        <a href="<?= $baseUrl ?>/movies.php"
+          class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="film" class="inline w-4 h-4 mr-2"></i>Quản lý phim
         </a>
-        <a href="<?= $baseUrl?>/theaters.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+        <a href="<?= $baseUrl ?>/theaters.php"
+          class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="building" class="inline w-4 h-4 mr-2"></i>Quản lý rạp
         </a>
-        <a href="<?= $baseUrl?>/screens.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+        <a href="<?= $baseUrl ?>/screens.php"
+          class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="monitor" class="inline w-4 h-4 mr-2"></i>Quản lý phòng chiếu
         </a>
-        <a href="<?= $baseUrl?>/shows.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+        <a href="<?= $baseUrl ?>/shows.php"
+          class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="calendar-days" class="inline w-4 h-4 mr-2"></i>Quản lý suất chiếu
         </a>
-        <a href="<?= $baseUrl?>/bookings.php" class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
+        <a href="<?= $baseUrl ?>/bookings.php"
+          class="nav-link block p-3 rounded hover:bg-gray-700 font-medium text-gray-300">
           <i data-lucide="ticket" class="inline w-4 h-4 mr-2"></i>Quản lý đơn đặt vé
         </a>
-       
+
       </nav>
 
       <!-- User Info & Actions -->
@@ -97,17 +121,17 @@ $userRole = $_SESSION['user']['role'] ?? 'admin';
             <?= ucfirst($userRole) ?>
           </p>
         </div>
-        
+
         <!-- Nút chuyển sang Client -->
-        <a href="../clinet/index.php" 
-           class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+        <a href="../clinet/index.php"
+          class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
           <i data-lucide="globe" class="w-4 h-4"></i>
           <span>Trang khách hàng</span>
         </a>
-        
+
         <!-- Nút Logout -->
-        <a href="../clinet/logout.php" 
-           class="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+        <a href="../clinet/logout.php"
+          class="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
           <i data-lucide="log-out" class="w-4 h-4"></i>
           <span>Đăng xuất</span>
         </a>

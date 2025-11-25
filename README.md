@@ -148,6 +148,7 @@ views/
 │── clinet/
 │   ├── index.php
 │   ├── ...
+index.php (file  rỗng)
 README.md
 
 ```
